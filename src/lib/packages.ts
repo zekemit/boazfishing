@@ -51,7 +51,7 @@ export const PACKAGES: LessonPackage[] = [
     includes: [
       'Choosing between cut and live bait for the fish you want',
       'Structure fishing: points, drop-offs, docks and weed edges',
-      'Rigging for bigger fish: bobber, bottom and live-bait setups',
+      'Fishing at the right depth, from the surface to the bottom',
       'Reading bites and setting the hook at the right moment',
     ],
   },

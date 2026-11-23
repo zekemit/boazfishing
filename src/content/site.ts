@@ -54,7 +54,7 @@ export const MEET = {
 export const REVIEWS = [
   {
     quote:
-      'My daughter is eight and had never held a rod. Boaz had her casting on her own in ten minutes and she landed a fish before the lesson was over. She has not stopped talking about it.',
+      'My daughter is eight and had never held a rod. Boaz had her casting on her own in ten minutes and baiting her own hook by the end. She has not stopped talking about it.',
     name: 'Dana R.',
     context: 'Parent of a first-time angler, First Cast',
   },
