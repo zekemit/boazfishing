@@ -53,6 +53,7 @@ interface Props {
 
 export function BookingCard({ booking, all, today, tz, actions }: Props) {
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [emailStudent, setEmailStudent] = useState(true);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [tags, setTags] = useState<string[]>(booking.tags ?? []);
@@ -81,7 +82,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
   const toggle = (list: string[], set: (v: string[]) => void, v: string) => set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
   const run = async (s: BookingStatus) => {
     setBusy(true);
-    await actions.setStatus(booking, s);
+    await actions.setStatus(booking, s, s === 'cancelled' ? { notify: emailStudent } : {});
     setBusy(false);
     setConfirmCancel(false);
   };
@@ -268,6 +269,10 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
           (confirmCancel ? (
             <span className="ml-auto flex flex-wrap items-center gap-2 rounded-lg bg-red-50 px-3 py-1.5">
               <span className="text-sm font-semibold text-red-800">Cancel and free this time slot?</span>
+              <label className="flex min-h-[40px] items-center gap-2 text-sm text-red-900">
+                <input type="checkbox" checked={emailStudent} onChange={(e) => setEmailStudent(e.target.checked)} className="h-5 w-5 accent-red-700" data-testid="email-student" />
+                Email {booking.name.split(' ')[0]} that it's cancelled
+              </label>
               <button type="button" disabled={busy} onClick={() => void run('cancelled')} className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-800">
                 Yes, cancel
               </button>

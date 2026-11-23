@@ -9,19 +9,19 @@ import { useToast } from './Toast';
 export function useBookingActions(refresh: () => Promise<void>) {
   const toast = useToast();
 
-  async function setStatus(b: Booking, status: BookingStatus) {
+  async function setStatus(b: Booking, status: BookingStatus, opts: { notify?: boolean } = {}) {
     try {
-      await api('/api/bookings', { method: 'PATCH', json: { id: b.id, status } });
+      await api('/api/bookings', { method: 'PATCH', json: { id: b.id, status, ...(opts.notify === false ? { notify: false } : {}) } });
       await refresh();
       notifyChange();
       const name = b.name.split(' ')[0];
       toast.success(
         status === 'confirmed'
-          ? `Approved ${name}'s lesson.`
+          ? `Approved ${name}'s lesson. A confirmation email is logged in Alerts.`
           : status === 'completed'
             ? `Marked ${name}'s lesson completed.`
             : status === 'cancelled'
-              ? 'Cancelled. That time is open on the public calendar again.'
+              ? `Cancelled. That time is open again${opts.notify === false ? '.' : ', and a cancellation email is logged in Alerts.'}`
               : `Restored ${name}'s booking.`,
       );
     } catch (e) {

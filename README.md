@@ -42,6 +42,8 @@ Nothing here needs a key to run. With no keys set, every message is **simulated*
 | What | When | How it is sent |
 |---|---|---|
 | Student confirmation email (package, date and time, backyard-to-pond details, what to bring, Boaz's contact info, calendar invite) | The moment they book | SMTP, free with a Gmail app password |
+| Student approval email ("Boaz confirmed your lesson", with a calendar update) | When Boaz taps Approve | SMTP |
+| Student cancellation email (time is open again, how to rebook, and a calendar cancel that removes the lesson from their calendar) | When Boaz cancels a lesson. A checkbox on the cancel prompt lets him skip it | SMTP |
 | Student reminder email | About a day before (any lesson within 30 hours that has not had one) | SMTP |
 | Booking alert to Boaz's phone (name, phone, package, time) | The moment someone books | ntfy push (free, no account). Optional: Twilio text, or any email address |
 | Morning agenda to Boaz | Once per lesson day, after 6 AM local | Same phone channels |

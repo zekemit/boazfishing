@@ -9,7 +9,7 @@ export interface SendResult {
 const fail = (e: unknown): SendResult => ({ status: 'failed', error: e instanceof Error ? e.message.slice(0, 300) : 'Unknown error' });
 
 /** Email over SMTP (Gmail app password by default; any SMTP host works). Never throws. */
-export async function sendEmail(to: string, subject: string, text: string, html: string, ics?: string): Promise<SendResult> {
+export async function sendEmail(to: string, subject: string, text: string, html: string, ics?: string, icsMethod: 'PUBLISH' | 'CANCEL' = 'PUBLISH'): Promise<SendResult> {
   if (!smtpLive()) return { status: 'simulated' };
   try {
     const nodemailer = (await import('nodemailer')).default;
@@ -30,7 +30,7 @@ export async function sendEmail(to: string, subject: string, text: string, html:
       subject,
       text,
       html,
-      ...(ics ? { icalEvent: { method: 'PUBLISH', content: ics, filename: 'lesson.ics' } } : {}),
+      ...(ics ? { icalEvent: { method: icsMethod, content: ics, filename: 'lesson.ics' } } : {}),
     });
     return { status: 'sent' };
   } catch (e) {

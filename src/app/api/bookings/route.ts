@@ -4,7 +4,7 @@ import { getPackage, priceFor } from '@/lib/packages';
 import { fromMin, toMin } from '@/lib/time';
 import { mutate, readDb } from '@/server/db';
 import { businessNow, businessTz } from '@/server/clock';
-import { notifyNewBooking } from '@/server/notify/service';
+import { notifyNewBooking, notifyStatusChange } from '@/server/notify/service';
 import { bookingConflicts, isBookable } from '@/server/availability';
 import { clientIp, fail, guardAdmin, guarded, HttpError, json, readJson, zodFail } from '@/server/http';
 import { allow } from '@/server/rateLimit';
@@ -81,23 +81,30 @@ export async function PATCH(req: NextRequest) {
     if (denied) return denied;
     const parsed = bookingPatch.safeParse(await readJson(req));
     if (!parsed.success) return zodFail(parsed.error);
-    const { id, status, tags, practiced, lessonNotes } = parsed.data;
+    const { id, status, notify, tags, practiced, lessonNotes } = parsed.data;
 
-    const booking = await mutate((db) => {
+    const { booking, previous } = await mutate((db) => {
       const b = db.bookings.find((x) => x.id === id);
       if (!b) throw new HttpError(404, 'That booking no longer exists.');
+      let previous = b.status;
       if (status !== undefined) {
         if (b.status === 'cancelled' && status !== 'cancelled' && bookingConflicts(db, b)) {
           throw new HttpError(409, 'Someone else has booked that time since this was cancelled, so it cannot be restored.');
         }
+        previous = b.status;
         b.status = status;
       }
       if (tags !== undefined) b.tags = [...new Set(tags)];
       if (practiced !== undefined) b.practiced = [...new Set(practiced)];
       if (lessonNotes !== undefined) b.lessonNotes = lessonNotes;
       b.updatedAt = new Date().toISOString();
-      return b;
+      return { booking: b, previous };
     });
+    // Tell the student when Boaz approves a new request or cancels. Only on a real change, so a double click can't email twice.
+    if (notify !== false && status && previous !== status) {
+      if (status === 'confirmed' && previous === 'pending') after(() => notifyStatusChange(booking, 'approved'));
+      if (status === 'cancelled') after(() => notifyStatusChange(booking, 'cancelled'));
+    }
     return json({ booking });
   });
 }

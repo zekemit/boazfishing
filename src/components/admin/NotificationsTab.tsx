@@ -11,6 +11,8 @@ import { useToast } from './Toast';
 
 const KIND: Record<NotificationEntry['kind'], string> = {
   student_confirmation: 'Student confirmation',
+  student_approved: 'Student approval',
+  student_cancelled: 'Student cancellation',
   student_reminder: 'Student reminder',
   boaz_alert: 'New booking alert',
   boaz_agenda: 'Morning agenda',

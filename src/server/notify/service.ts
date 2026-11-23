@@ -6,7 +6,7 @@ import { mutate, readDb } from '../db';
 import { buildSingle } from '../calendar';
 import { sendEmail, sendNtfy, sendSms, type SendResult } from './channels';
 import { alertEmail, boazPhone, ntfyLive, siteUrl, smsLive, smtpLive } from './config';
-import { boazAgenda, boazAlert, studentConfirmation, studentReminder } from './templates';
+import { boazAgenda, boazAlert, studentApproved, studentCancelled, studentConfirmation, studentReminder } from './templates';
 
 type Pending = Omit<NotificationEntry, 'id' | 'at'>;
 const MAX_LOG = 300;
@@ -50,9 +50,16 @@ async function alertBoaz(kind: NotifyKind, title: string, text: string, bookingI
   return out;
 }
 
-async function emailStudent(kind: 'student_confirmation' | 'student_reminder' | 'test', b: Booking, m: { subject: string; text: string; html: string }, to = b.email): Promise<Pending> {
+async function emailStudent(kind: 'student_confirmation' | 'student_approved' | 'student_cancelled' | 'student_reminder' | 'test', b: Booking, m: { subject: string; text: string; html: string }, to = b.email): Promise<Pending> {
   const host = new URL(siteUrl()).host;
-  const r = await sendEmail(to, m.subject, m.text, m.html, kind === 'student_reminder' ? undefined : buildSingle(b, host, { forStudent: true }));
+  // Calendar attachment: the invite, an update that replaces it, or a cancel that removes it from their calendar.
+  const ics =
+    kind === 'student_reminder'
+      ? undefined
+      : kind === 'student_cancelled'
+        ? buildSingle(b, host, { forStudent: true, cancel: true, sequence: 2 })
+        : buildSingle(b, host, { forStudent: true, sequence: kind === 'student_approved' ? 1 : 0 });
+  const r = await sendEmail(to, m.subject, m.text, m.html, ics, kind === 'student_cancelled' ? 'CANCEL' : 'PUBLISH');
   return entry(kind, 'email', to, m.subject, m.text, r, b.id);
 }
 
@@ -67,6 +74,19 @@ export async function notifyNewBooking(b: Booking): Promise<void> {
     });
   } catch (e) {
     console.error('notifyNewBooking failed', e);
+  }
+}
+
+/** Emails the student when Boaz approves or cancels their lesson. Never throws. */
+export async function notifyStatusChange(b: Booking, kind: 'approved' | 'cancelled'): Promise<void> {
+  try {
+    const out =
+      kind === 'approved'
+        ? await emailStudent('student_approved', b, studentApproved(b))
+        : await emailStudent('student_cancelled', b, studentCancelled(b));
+    await record([out]);
+  } catch (e) {
+    console.error('notifyStatusChange failed', e);
   }
 }
 

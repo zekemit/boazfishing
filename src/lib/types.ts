@@ -66,7 +66,7 @@ export const PRACTICE_SKILLS = [
   'Reading the water',
 ] as const;
 
-export type NotifyKind = 'student_confirmation' | 'student_reminder' | 'boaz_alert' | 'boaz_agenda' | 'test';
+export type NotifyKind = 'student_confirmation' | 'student_approved' | 'student_cancelled' | 'student_reminder' | 'boaz_alert' | 'boaz_agenda' | 'test';
 export type NotifyChannel = 'email' | 'ntfy' | 'sms';
 export type NotifyStatus = 'sent' | 'simulated' | 'failed';
 

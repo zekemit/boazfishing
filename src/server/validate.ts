@@ -59,6 +59,8 @@ export const bookingPatch = z
   .object({
     id: z.string().min(1),
     status: z.enum(BOOKING_STATUSES).optional(),
+    /** Set false to change the status without emailing the student. Defaults to true. */
+    notify: z.boolean().optional(),
     tags: z.array(label).max(12).optional(),
     practiced: z.array(label).max(12).optional(),
     lessonNotes: z.string().trim().max(2000, 'Keep lesson notes under 2000 characters.').optional(),

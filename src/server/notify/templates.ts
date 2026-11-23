@@ -138,3 +138,70 @@ export function boazAgenda(date: string, lessons: Booking[]): { title: string; t
     text: `${fmtDateShort(date)}\n${lines.join('\n')}`,
   };
 }
+
+export function studentApproved(b: Booking): Message {
+  const pkg = getPackage(b.packageId);
+  const first = b.name.trim().split(/\s+/)[0];
+  const bp = beginner(b);
+  const c = contact();
+  const subject = `Confirmed: ${pkg?.name ?? 'Fishing lesson'} on ${fmtDateShort(b.date)} at ${fmt12(b.start)}`;
+  const text = [
+    `Hi ${first},`,
+    '',
+    'Good news: Boaz has confirmed your lesson. You are all set.',
+    '',
+    ...details(b).map(([k, v]) => `${k}: ${v}`),
+    '',
+    ...(bp ? [bp.text, ''] : []),
+    'WHAT TO BRING',
+    ...BRING.map((x) => `- ${x}`),
+    'Rods, reels and bait are all provided.',
+    '',
+    'Boaz will text you the exact meeting spot. Need to change plans? Text him at least 24 hours ahead.',
+    '',
+    c.text,
+  ].join('\n');
+  const html = shell(
+    'Your lesson is confirmed',
+    `<p style="margin-top:0">Hi ${esc(first)},</p><p><strong>Good news: Boaz has confirmed your lesson.</strong> You are all set.</p>
+<table style="border-collapse:collapse;margin:8px 0">${details(b).map(([k, v]) => row(k, v)).join('')}</table>
+${bp?.html ?? ''}
+<div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+<p style="margin:6px 0 0">Rods, reels and bait are all provided.</p>
+<p style="color:#46534D">Boaz will text you the exact meeting spot. Need to change plans? Text him at least 24 hours ahead.</p>
+<div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
+  );
+  return { subject, text, html };
+}
+
+export function studentCancelled(b: Booking): Message {
+  const pkg = getPackage(b.packageId);
+  const first = b.name.trim().split(/\s+/)[0];
+  const c = contact();
+  const rebook = `${siteUrl()}/#book`;
+  const when = `${fmtDateLong(b.date)}, ${fmtRange(b.start, b.end)}`;
+  const subject = `Cancelled: your ${pkg?.name ?? 'fishing'} lesson on ${fmtDateShort(b.date)}`;
+  const text = [
+    `Hi ${first},`,
+    '',
+    `Your ${pkg?.name} lesson on ${when} has been cancelled, and that time is open again. You have not been charged anything.`,
+    '',
+    'We would love to get you on the water another day. Pick a new time here:',
+    rebook,
+    '',
+    `Confirmation code (cancelled): ${b.code}`,
+    '',
+    'Questions, or was this a surprise? Reach Boaz directly:',
+    c.text,
+  ].join('\n');
+  const html = shell(
+    'Your lesson was cancelled',
+    `<p style="margin-top:0">Hi ${esc(first)},</p>
+<p>Your <strong>${esc(pkg?.name ?? '')}</strong> lesson on <strong>${esc(when)}</strong> has been cancelled, and that time is open again. You have not been charged anything.</p>
+<p>We would love to get you on the water another day.</p>
+<p style="margin:18px 0"><a href="${rebook}" style="background:#D97706;color:#12281D;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:8px;display:inline-block">Pick a new time</a></p>
+<p style="color:#66726C;font-size:14px">Confirmation code (cancelled): ${esc(b.code)}</p>
+<div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D"><div style="margin-bottom:4px">Questions, or was this a surprise? Reach Boaz directly:</div>${c.html}</div>`,
+  );
+  return { subject, text, html };
+}
