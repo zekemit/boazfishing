@@ -4,6 +4,7 @@ import { getPackage, priceFor } from '@/lib/packages';
 import { fromMin, toMin } from '@/lib/time';
 import { mutate, readDb } from '@/server/db';
 import { businessNow, businessTz } from '@/server/clock';
+import { cancelPath } from '@/server/cancel';
 import { notifyNewBooking, notifyStatusChange } from '@/server/notify/service';
 import { bookingConflicts, isBookable } from '@/server/availability';
 import { clientIp, fail, guardAdmin, guarded, HttpError, json, readJson, zodFail } from '@/server/http';
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
     });
     // Email the student and ping Boaz's phone after the response is sent. Can never fail the booking.
     after(() => notifyNewBooking(booking));
-    return json({ booking }, 201);
+    return json({ booking, cancelUrl: await cancelPath(booking) }, 201);
   });
 }
 
@@ -93,6 +94,7 @@ export async function PATCH(req: NextRequest) {
         }
         previous = b.status;
         b.status = status;
+        if (status === 'cancelled' && previous !== 'cancelled') b.cancelledBy = 'instructor';
       }
       if (tags !== undefined) b.tags = [...new Set(tags)];
       if (practiced !== undefined) b.practiced = [...new Set(practiced)];

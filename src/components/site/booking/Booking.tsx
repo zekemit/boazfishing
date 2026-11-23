@@ -38,6 +38,7 @@ export function Booking() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [booking, setBooking] = useState<BookingType | null>(null);
+  const [cancelUrl, setCancelUrl] = useState<string | null>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const pendingDate = useRef<string | null>(null);
@@ -124,7 +125,7 @@ export function Booking() {
     }
     setSubmitting(true);
     try {
-      const res = await api<{ booking: BookingType }>('/api/bookings', {
+      const res = await api<{ booking: BookingType; cancelUrl?: string }>('/api/bookings', {
         method: 'POST',
         json: {
           packageId: pkg.id,
@@ -140,6 +141,7 @@ export function Booking() {
         },
       });
       setBooking(res.booking);
+      setCancelUrl(res.cancelUrl ?? null);
       setStep(4);
       notifyChange();
     } catch (e) {
@@ -430,7 +432,7 @@ export function Booking() {
                     />
                   )}
 
-                  {step === 4 && booking && <Confirmation booking={booking} onAnother={bookAnother} />}
+                  {step === 4 && booking && <Confirmation booking={booking} cancelUrl={cancelUrl} onAnother={bookAnother} />}
                 </motion.div>
               </AnimatePresence>
 

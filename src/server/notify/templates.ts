@@ -32,6 +32,15 @@ function shell(title: string, bodyHtml: string): string {
 </div></body></html>`;
 }
 
+/** The cancel-my-lesson link block, for text and HTML. Empty when there is no link (test emails). */
+function cancelBlock(url?: string): { text: string; html: string } {
+  if (!url) return { text: '', html: '' };
+  return {
+    text: `Can't make it? Cancel here (at least 24 hours ahead): ${url}`,
+    html: `<p style="color:#46534D;margin:14px 0 0">Can't make it? <a href="${url}" style="color:#B45309;font-weight:700">Cancel my lesson</a> (at least 24 hours ahead).</p>`,
+  };
+}
+
 const row = (k: string, v: string) =>
   `<tr><td style="padding:6px 12px 6px 0;color:#66726C;vertical-align:top">${esc(k)}</td><td style="padding:6px 0;font-weight:600">${esc(v)}</td></tr>`;
 
@@ -58,7 +67,7 @@ function beginner(b: Booking): { text: string; html: string } | null {
   };
 }
 
-export function studentConfirmation(b: Booking): Message {
+export function studentConfirmation(b: Booking, cancelUrl?: string): Message {
   const pkg = getPackage(b.packageId);
   const first = b.name.trim().split(/\s+/)[0];
   const bp = beginner(b);
@@ -77,6 +86,7 @@ export function studentConfirmation(b: Booking): Message {
     'Rods, reels and bait are all provided.',
     '',
     'Need to change plans? Text Boaz at least 24 hours ahead and the time goes back on the calendar. Bad weather? He will move you to another day at no charge.',
+    ...(cancelBlock(cancelUrl).text ? [cancelBlock(cancelUrl).text] : []),
     '',
     c.text,
   ].join('\n');
@@ -88,12 +98,13 @@ ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
 <p style="margin:6px 0 0">Rods, reels and bait are all provided.</p>
 <p style="color:#46534D">Need to change plans? Text Boaz at least 24 hours ahead and the time goes back on the calendar. Bad weather? He will move you to another day at no charge.</p>
+${cancelBlock(cancelUrl).html}
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
   );
   return { subject, text, html };
 }
 
-export function studentReminder(b: Booking): Message {
+export function studentReminder(b: Booking, cancelUrl?: string): Message {
   const pkg = getPackage(b.packageId);
   const first = b.name.trim().split(/\s+/)[0];
   const c = contact();
@@ -107,6 +118,7 @@ export function studentReminder(b: Booking): Message {
     '',
     'Bring: ' + BRING.join(', ').toLowerCase() + '. Everything else is provided.',
     "If the weather looks rough, Boaz will message you. Otherwise we'll see you there.",
+    ...(cancelBlock(cancelUrl).text ? [cancelBlock(cancelUrl).text] : []),
     '',
     c.text,
   ].join('\n');
@@ -117,6 +129,7 @@ export function studentReminder(b: Booking): Message {
 ${bp ? `<p style="background:#EEF3EF;border-radius:10px;padding:12px 16px">${esc(bp)}</p>` : ''}
 <p><strong>Bring:</strong> ${esc(BRING.join(', ').toLowerCase())}. Everything else is provided.</p>
 <p style="color:#46534D">If the weather looks rough, Boaz will message you. Otherwise we'll see you there.</p>
+${cancelBlock(cancelUrl).html}
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
   );
   return { subject, text, html };
@@ -139,7 +152,7 @@ export function boazAgenda(date: string, lessons: Booking[]): { title: string; t
   };
 }
 
-export function studentApproved(b: Booking): Message {
+export function studentApproved(b: Booking, cancelUrl?: string): Message {
   const pkg = getPackage(b.packageId);
   const first = b.name.trim().split(/\s+/)[0];
   const bp = beginner(b);
@@ -158,6 +171,7 @@ export function studentApproved(b: Booking): Message {
     'Rods, reels and bait are all provided.',
     '',
     'Boaz will text you the exact meeting spot. Need to change plans? Text him at least 24 hours ahead.',
+    ...(cancelBlock(cancelUrl).text ? [cancelBlock(cancelUrl).text] : []),
     '',
     c.text,
   ].join('\n');
@@ -169,6 +183,7 @@ ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
 <p style="margin:6px 0 0">Rods, reels and bait are all provided.</p>
 <p style="color:#46534D">Boaz will text you the exact meeting spot. Need to change plans? Text him at least 24 hours ahead.</p>
+${cancelBlock(cancelUrl).html}
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
   );
   return { subject, text, html };
@@ -204,4 +219,13 @@ export function studentCancelled(b: Booking): Message {
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D"><div style="margin-bottom:4px">Questions, or was this a surprise? Reach Boaz directly:</div>${c.html}</div>`,
   );
   return { subject, text, html };
+}
+
+/** Alert for Boaz when a student cancels with their link. */
+export function boazCancelled(b: Booking): { title: string; text: string } {
+  const pkg = getPackage(b.packageId);
+  return {
+    title: `Cancelled by student: ${b.name}`,
+    text: `${b.name}, ${b.phone}. ${pkg?.name}, ${fmtDateShort(b.date)} at ${fmt12(b.start)}. That time is open again.`,
+  };
 }

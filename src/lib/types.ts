@@ -48,6 +48,7 @@ export interface Booking {
   tags?: string[]; // progress tags, e.g. "Graduated to Pond"
   practiced?: string[]; // skills worked on in this lesson
   lessonNotes?: string;
+  cancelledBy?: 'student' | 'instructor';
   // Notification bookkeeping (prevents duplicate sends)
   confirmationSentAt?: string;
   reminderSentAt?: string;
@@ -66,7 +67,7 @@ export const PRACTICE_SKILLS = [
   'Reading the water',
 ] as const;
 
-export type NotifyKind = 'student_confirmation' | 'student_approved' | 'student_cancelled' | 'student_reminder' | 'boaz_alert' | 'boaz_agenda' | 'test';
+export type NotifyKind = 'student_confirmation' | 'student_approved' | 'student_cancelled' | 'boaz_cancelled' | 'student_reminder' | 'boaz_alert' | 'boaz_agenda' | 'test';
 export type NotifyChannel = 'email' | 'ntfy' | 'sms';
 export type NotifyStatus = 'sent' | 'simulated' | 'failed';
 

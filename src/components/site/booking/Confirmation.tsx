@@ -26,7 +26,7 @@ function buildIcs(b: Booking, lessonName: string): string {
   ].join('\r\n');
 }
 
-export function Confirmation({ booking, onAnother }: { booking: Booking; onAnother: () => void }) {
+export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booking; cancelUrl?: string | null; onAnother: () => void }) {
   const reduce = useReducedMotion();
   const pkg = getPackage(booking.packageId);
   const firstName = booking.name.trim().split(/\s+/)[0];
@@ -97,6 +97,12 @@ export function Confirmation({ booking, onAnother }: { booking: Booking; onAnoth
           </ul>
         </div>
       </div>
+
+      {cancelUrl && (
+        <p className="mt-4 text-sm text-ink-soft">
+          Plans change? You can <a href={cancelUrl} className="font-semibold text-river underline underline-offset-4">cancel this lesson</a> up to 24 hours ahead. We also put this link in your emails.
+        </p>
+      )}
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button type="button" onClick={downloadIcs} className="btn-dark">

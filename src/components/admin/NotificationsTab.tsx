@@ -13,6 +13,7 @@ const KIND: Record<NotificationEntry['kind'], string> = {
   student_confirmation: 'Student confirmation',
   student_approved: 'Student approval',
   student_cancelled: 'Student cancellation',
+  boaz_cancelled: 'Student cancelled alert',
   student_reminder: 'Student reminder',
   boaz_alert: 'New booking alert',
   boaz_agenda: 'Morning agenda',

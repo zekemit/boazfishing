@@ -6,7 +6,8 @@ import { mutate, readDb } from '../db';
 import { buildSingle } from '../calendar';
 import { sendEmail, sendNtfy, sendSms, type SendResult } from './channels';
 import { alertEmail, boazPhone, ntfyLive, siteUrl, smsLive, smtpLive } from './config';
-import { boazAgenda, boazAlert, studentApproved, studentCancelled, studentConfirmation, studentReminder } from './templates';
+import { cancelPath } from '../cancel';
+import { boazAgenda, boazAlert, boazCancelled, studentApproved, studentCancelled, studentConfirmation, studentReminder } from './templates';
 
 type Pending = Omit<NotificationEntry, 'id' | 'at'>;
 const MAX_LOG = 300;
@@ -63,11 +64,13 @@ async function emailStudent(kind: 'student_confirmation' | 'student_approved' | 
   return entry(kind, 'email', to, m.subject, m.text, r, b.id);
 }
 
+const cancelUrl = async (b: Booking) => `${siteUrl()}${await cancelPath(b)}`;
+
 /** Called right after a booking is saved. Never throws, so a missing key can never break booking. */
 export async function notifyNewBooking(b: Booking): Promise<void> {
   try {
     const alert = boazAlert(b);
-    const [student, boaz] = await Promise.all([emailStudent('student_confirmation', b, studentConfirmation(b)), alertBoaz('boaz_alert', alert.title, alert.text, b.id)]);
+    const [student, boaz] = await Promise.all([emailStudent('student_confirmation', b, studentConfirmation(b, await cancelUrl(b))), alertBoaz('boaz_alert', alert.title, alert.text, b.id)]);
     await record([student, ...boaz], (db) => {
       const row = db.bookings.find((x) => x.id === b.id);
       if (row && student.status === 'sent') row.confirmationSentAt = new Date().toISOString();
@@ -82,11 +85,22 @@ export async function notifyStatusChange(b: Booking, kind: 'approved' | 'cancell
   try {
     const out =
       kind === 'approved'
-        ? await emailStudent('student_approved', b, studentApproved(b))
+        ? await emailStudent('student_approved', b, studentApproved(b, await cancelUrl(b)))
         : await emailStudent('student_cancelled', b, studentCancelled(b));
     await record([out]);
   } catch (e) {
     console.error('notifyStatusChange failed', e);
+  }
+}
+
+/** A student cancelled with their link: confirm to them, and tell Boaz's phone straight away. Never throws. */
+export async function notifyStudentCancelled(b: Booking): Promise<void> {
+  try {
+    const alert = boazCancelled(b);
+    const [student, boaz] = await Promise.all([emailStudent('student_cancelled', b, studentCancelled(b)), alertBoaz('boaz_cancelled', alert.title, alert.text, b.id)]);
+    await record([student, ...boaz]);
+  } catch (e) {
+    console.error('notifyStudentCancelled failed', e);
   }
 }
 
@@ -118,7 +132,7 @@ export async function runReminders(): Promise<ReminderRun> {
     for (const b of picked) b.reminderSentAt = nowIso;
     return picked.map((b) => ({ ...b }));
   });
-  const results = await Promise.all(claimed.map((b) => emailStudent('student_reminder', b, studentReminder(b))));
+  const results = await Promise.all(claimed.map(async (b) => emailStudent('student_reminder', b, studentReminder(b, await cancelUrl(b)))));
   results.forEach((r) => (summary.studentReminders[r.status]++));
   const failedIds = claimed.filter((_, i) => results[i].status === 'failed').map((b) => b.id);
   if (results.length) {

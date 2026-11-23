@@ -106,6 +106,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
             <span className={cn('rounded-full px-2.5 py-1 text-xs font-bold', STATUS_STYLE[booking.status])}>{STATUS_LABEL[booking.status]}</span>
             {tag && <span className="rounded-full bg-river px-2.5 py-1 text-xs font-bold text-white">{tag}</span>}
             {lessonNo > 1 && <span className="rounded-full bg-sunset px-2.5 py-1 text-xs font-bold text-river-950">Returning, lesson {lessonNo}</span>}
+            {booking.cancelledBy === 'student' && booking.status === 'cancelled' && <span className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white">Cancelled by student</span>}
             {booking.sample && <span className="rounded-full border border-sand-400 px-2.5 py-1 text-xs font-semibold text-ink-mute">Sample</span>}
             <span className="text-xs font-semibold tracking-wide text-ink-mute">{booking.code}</span>
           </div>
