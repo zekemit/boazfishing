@@ -12,6 +12,9 @@ export function prettyPhone(p: string): string {
 }
 
 export const smtpLive = (): boolean => Boolean(env('SMTP_USER') && env('SMTP_PASS'));
+/** Gmail without an app password: a tiny Google Apps Script web app that sends the mail from Boaz's own Gmail. */
+export const webhookLive = (): boolean => Boolean(env('EMAIL_WEBHOOK_URL') && env('EMAIL_WEBHOOK_SECRET'));
+export const emailLive = (): boolean => smtpLive() || webhookLive();
 export const boazEmail = (): string => env('BOAZ_EMAIL') || env('SMTP_USER');
 export const alertEmail = (): string => env('BOAZ_ALERT_EMAIL');
 export const ntfyLive = (): boolean => Boolean(env('NTFY_TOPIC'));
@@ -29,8 +32,8 @@ export function channelStatuses(): ChannelStatus[] {
     {
       channel: 'email',
       label: 'Student emails',
-      live: smtpLive(),
-      detail: smtpLive() ? `Sending from ${env('EMAIL_FROM') || env('SMTP_USER')}` : 'Not set up. Emails are simulated and logged below.',
+      live: emailLive(),
+      detail: emailLive() ? `Sending from ${smtpLive() ? env('EMAIL_FROM') || env('SMTP_USER') : boazEmail() || 'your Gmail'}${smtpLive() ? '' : ' (Google Apps Script)'}` : 'Not set up. Emails are simulated and logged below.',
     },
     {
       channel: 'ntfy',
@@ -47,8 +50,8 @@ export function channelStatuses(): ChannelStatus[] {
     {
       channel: 'alert-email',
       label: 'Alert email or carrier text gateway',
-      live: Boolean(alertEmail()) && smtpLive(),
-      detail: alertEmail() ? (smtpLive() ? `Alerts also go to ${alertEmail()}` : 'Needs the email keys above.') : 'Optional. Any address, including a carrier email-to-text address.',
+      live: Boolean(alertEmail()) && emailLive(),
+      detail: alertEmail() ? (emailLive() ? `Alerts also go to ${alertEmail()}` : 'Needs the email keys above.') : 'Optional. Any address, including a carrier email-to-text address.',
     },
   ];
 }

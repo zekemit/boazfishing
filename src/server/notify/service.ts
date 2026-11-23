@@ -5,7 +5,7 @@ import { businessNow, localToUtc } from '../clock';
 import { mutate, readDb } from '../db';
 import { buildSingle } from '../calendar';
 import { sendEmail, sendNtfy, sendSms, type SendResult } from './channels';
-import { alertEmail, boazPhone, ntfyLive, siteUrl, smsLive, smtpLive } from './config';
+import { alertEmail, boazPhone, ntfyLive, siteUrl, smsLive, smtpLive, emailLive } from './config';
 import { cancelPath } from '../cancel';
 import { boazAgenda, boazAlert, boazCancelled, studentApproved, studentCancelled, studentConfirmation, studentReminder } from './templates';
 
@@ -202,4 +202,4 @@ export async function sendTest(target: 'phone' | 'agenda' | 'email', to?: string
   return out;
 }
 
-export { smtpLive };
+export { smtpLive, emailLive };

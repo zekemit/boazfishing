@@ -59,17 +59,19 @@ const base = (alt: string, caption: string, focusX = 50, focusY = 40): PhotoSett
   hidden: false,
 });
 
+const hide = (p: PhotoSettings): PhotoSettings => ({ ...p, hidden: true });
+
 /** Starting copy and framing for each slot. The images themselves come from the default file paths. */
 export function defaultPhotos(): PhotoMap {
   return {
-    hero: base('Two young anglers working a deeply bent rod on calm, glassy water under a clear blue sky', '', 70, 20),
-    bio: base('Boaz smiling and holding a freshly caught striped bass', '', 50, 35),
-    'gallery-1': base('A hooked striped bass dangling at the edge of the water while the angler holds the rod high', 'Striper on the line', 55, 35),
-    'gallery-2': base('A grinning angler holding up a silver catfish next to the cooler', 'First-fish grin', 50, 30),
-    'gallery-3': base('A hands-on lesson in handling a big catfish on the deck', 'Hands-on handling lesson', 50, 50),
-    'gallery-4': base('Two young anglers fighting a fish with the rod bent over calm water', 'Fish on! Rod doubled over', 60, 35),
-    'gallery-5': base('A smiling angler holding a striped bass across their chest', 'A summer striper to remember', 50, 35),
-    'gallery-6': base('A fresh catch from a summer lesson', 'Fresh from the water', 50, 40),
+    hero: base('A smiling young angler holding up a big redfish at a marsh dock', '', 55, 45),
+    bio: base('A smiling young angler holding a catfish with fish grips', '', 50, 35),
+    'gallery-1': base('Two young anglers sharing a rod on a wooden boardwalk over the marsh', 'Learning on the boardwalk', 45, 45),
+    'gallery-2': base('A young angler throwing a cast net in the shallows at low tide', 'Cast net practice at low tide', 55, 55),
+    'gallery-3': base('A laughing young angler holding a big redfish', 'Redfish!', 50, 50),
+    'gallery-4': hide(base('', '', 50, 40)),
+    'gallery-5': hide(base('', '', 50, 40)),
+    'gallery-6': hide(base('', '', 50, 40)),
   };
 }
 

@@ -1,5 +1,5 @@
 import type { NotifyStatus } from '@/lib/types';
-import { alertEmail, boazPhone, env, ntfyLive, smsLive, smtpLive } from './config';
+import { alertEmail, boazEmail, boazPhone, emailLive, env, ntfyLive, smsLive, smtpLive } from './config';
 
 export interface SendResult {
   status: NotifyStatus;
@@ -8,9 +8,10 @@ export interface SendResult {
 
 const fail = (e: unknown): SendResult => ({ status: 'failed', error: e instanceof Error ? e.message.slice(0, 300) : 'Unknown error' });
 
-/** Email over SMTP (Gmail app password by default; any SMTP host works). Never throws. */
+/** Email over SMTP (Gmail app password by default; any SMTP host works), or the Apps Script webhook. Never throws. */
 export async function sendEmail(to: string, subject: string, text: string, html: string, ics?: string, icsMethod: 'PUBLISH' | 'CANCEL' = 'PUBLISH'): Promise<SendResult> {
-  if (!smtpLive()) return { status: 'simulated' };
+  if (!emailLive()) return { status: 'simulated' };
+  if (!smtpLive()) return sendViaWebhook(to, subject, text, html, ics, icsMethod);
   try {
     const nodemailer = (await import('nodemailer')).default;
     const port = Number(env('SMTP_PORT')) || 465;
@@ -32,6 +33,29 @@ export async function sendEmail(to: string, subject: string, text: string, html:
       html,
       ...(ics ? { icalEvent: { method: icsMethod, content: ics, filename: 'lesson.ics' } } : {}),
     });
+    return { status: 'sent' };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/**
+ * Email through a Google Apps Script web app owned by Boaz's Gmail (no app password needed). The script
+ * checks a shared secret and calls MailApp.sendEmail, so mail is sent from his own address.
+ */
+async function sendViaWebhook(to: string, subject: string, text: string, html: string, ics: string | undefined, icsMethod: string): Promise<SendResult> {
+  try {
+    const res = await fetch(env('EMAIL_WEBHOOK_URL'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ secret: env('EMAIL_WEBHOOK_SECRET'), to, subject, text, html, replyTo: boazEmail(), fromName: 'Boaz Fishing Co.', ics, icsMethod }),
+      redirect: 'follow',
+      signal: AbortSignal.timeout(15000),
+    });
+    const body = (await res.text()).slice(0, 300);
+    let ok = false;
+    try { ok = JSON.parse(body).ok === true; } catch { /* not JSON: Google sign-in or error page */ }
+    if (!res.ok || !ok) throw new Error(`Email script said: ${body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160) || res.status}`);
     return { status: 'sent' };
   } catch (e) {
     return fail(e);

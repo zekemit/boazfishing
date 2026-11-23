@@ -72,6 +72,10 @@ Privacy note: ntfy alerts pass through ntfy.sh, and the long random topic name i
 - **Integrate Calendar:** a private `.ics` link (`/api/calendar/feed.ics?token=...`) for Apple Calendar, Google Calendar and Outlook, plus Add to Google Calendar and Download .ics on every booking. "Reset link" issues a new private link.
 - **Alerts:** channel status, Send test now, Run reminders now, and the full notification log.
 
+### Sending email without a Gmail app password
+
+If you can't make a Google app password (2-Step Verification off, no phone handy), use `scripts/gmail-sender.gs` instead: paste it into script.google.com while signed in as the sending Gmail, set `SECRET`, deploy as a **Web app** (Execute as: Me, Access: Anyone), then set `EMAIL_WEBHOOK_URL` (the web app URL) and `EMAIL_WEBHOOK_SECRET` (the same secret) plus `BOAZ_EMAIL`. Mail goes out from that Gmail through Google's own mail service (about 100 emails a day on a normal Gmail). `SMTP_*` wins if both are set.
+
 ## How booking works
 
 - Boaz marks **open windows** (e.g. 7:00 to 11:00 AM). Guests don't book windows, they book **lessons carved out of them**: every 30 minutes inside a window where the whole lesson fits.

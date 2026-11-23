@@ -137,7 +137,7 @@ export function NotificationsTab() {
             <summary className="cursor-pointer font-bold">Turn on live sending (free, about 5 minutes)</summary>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-ink-soft">
               <li><strong>Phone alerts:</strong> install the free <em>ntfy</em> app, subscribe to a private topic name, then set <code>NTFY_TOPIC</code> to that name.</li>
-              <li><strong>Student emails:</strong> create a Gmail app password and set <code>SMTP_USER</code> (the Gmail address) and <code>SMTP_PASS</code>.</li>
+              <li><strong>Student emails:</strong> either a Gmail app password (<code>SMTP_USER</code> + <code>SMTP_PASS</code>), or the no-password Google Apps Script sender (<code>EMAIL_WEBHOOK_URL</code> + <code>EMAIL_WEBHOOK_SECRET</code>, see <code>scripts/gmail-sender.gs</code>).</li>
               <li><strong>Your contact info in emails:</strong> set <code>BOAZ_PHONE</code> and <code>BOAZ_EMAIL</code>.</li>
               <li><strong>Scheduled reminders:</strong> {data.cronProtected ? 'protected with CRON_SECRET and running daily.' : 'set CRON_SECRET so the daily job can run.'}</li>
             </ol>
