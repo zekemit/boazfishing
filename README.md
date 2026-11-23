@@ -31,8 +31,43 @@ Copy `.env.example` to `.env.local`.
 | `BUSINESS_TZ` | `America/New_York` | Time zone Boaz works in. Decides "today" and which same-day times have passed. |
 | `BOAZ_DATA_DIR` | `./data` | Where `db.json` and uploaded photos live. Point at a persistent disk in production. |
 | `NEXT_PUBLIC_HIDE_PASSCODE_HINT` | unset | Set to `true` **before building** to hide the passcode hint. |
+| `NTFY_TOPIC`, `SMTP_USER`, `SMTP_PASS`, `BOAZ_PHONE`, `BOAZ_EMAIL`, `CRON_SECRET` | unset | Notifications. See the checklist above and `.env.example`. |
 | `BOAZ_SEED_SAMPLES` | unset | Set to `false` to seed the calendar without fake sample bookings (use for a live site). |
 | `BLOB_READ_WRITE_TOKEN` | unset | Set automatically by Vercel when a Blob store is connected. Switches storage from local files to a private Vercel Blob. |
+
+## Notifications (student emails and Boaz's phone)
+
+Nothing here needs a key to run. With no keys set, every message is **simulated** and logged in **Admin > Alerts**, so booking never breaks.
+
+| What | When | How it is sent |
+|---|---|---|
+| Student confirmation email (package, date and time, backyard-to-pond details, what to bring, Boaz's contact info, calendar invite) | The moment they book | SMTP, free with a Gmail app password |
+| Student reminder email | About a day before (any lesson within 30 hours that has not had one) | SMTP |
+| Booking alert to Boaz's phone (name, phone, package, time) | The moment someone books | ntfy push (free, no account). Optional: Twilio text, or any email address |
+| Morning agenda to Boaz | Once per lesson day, after 6 AM local | Same phone channels |
+
+`GET/POST /api/reminders` sends the scheduled ones. It is safe to call as often as you like: every reminder is claimed in a transaction before it goes out, so nothing is sent twice. It accepts the admin login, or `Authorization: Bearer $CRON_SECRET` (Vercel Cron does this by itself), or `?key=$CRON_SECRET` for any free pinger. `vercel.json` runs it daily at 11:00 UTC (7 AM Eastern in summer). Vercel's free plan only allows daily cron jobs, which is why reminders go out a day ahead rather than at an exact 24 hours.
+
+### Turn live sending on (free)
+
+1. **Phone alerts:** install the free **ntfy** app (iPhone or Android), tap +, subscribe to your private topic name, and set `NTFY_TOPIC` to that exact name.
+2. **Student emails:** in your Google Account turn on 2-Step Verification, create an **App password**, and set `SMTP_USER` (the Gmail address) and `SMTP_PASS` (the 16-character password).
+3. Set `BOAZ_PHONE` and `BOAZ_EMAIL`. They appear as Boaz's contact info in student emails.
+4. Set `CRON_SECRET` to any long random string (on Vercel, the daily reminders need it).
+5. Open **Admin > Alerts** and press **Send test now**. A pass means real bookings will work too.
+
+Optional: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` add real text messages (a US number may need carrier registration, so ntfy is the simple route). `BOAZ_ALERT_EMAIL` also sends each alert to an address, and a carrier email-to-text address works there.
+
+Privacy note: ntfy alerts pass through ntfy.sh, and the long random topic name is the only thing protecting them. Keep it private.
+
+## Command Center (`/admin`)
+
+- **Command:** live marsh tide, summer KPIs (upcoming lessons, lessons taught, hours on the water, estimated summer revenue) and today's agenda.
+- **Tide:** NOAA Tides & Currents, no key. Default station is Charleston Harbor (8665530), the nearest NOAA gauge with live water level to the Oyster Point and Hamlin Creek marsh. It shows rising or falling, current height, next high and low, a 24-hour curve, and "Marsh Bite Window" bands (the middle half of each rising or falling tide, when the current is strongest). That is a rule of thumb, not a forecast. If NOAA is unreachable, a typical tide curve is shown and labeled simulated.
+- **Availability** shows each day's high and low tides, and tells you whether each time block catches moving water.
+- **Bookings:** filters for Today, This week, Pending, Upcoming, Completed, Cancelled. One-tap Call and Text buttons. A notes and skill-tracker drawer on each booking (progress tags, what was practiced, lesson notes) and a returning-student badge.
+- **Integrate Calendar:** a private `.ics` link (`/api/calendar/feed.ics?token=...`) for Apple Calendar, Google Calendar and Outlook, plus Add to Google Calendar and Download .ics on every booking. "Reset link" issues a new private link.
+- **Alerts:** channel status, Send test now, Run reminders now, and the full notification log.
 
 ## How booking works
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { PACKAGES, formatPrice, type LessonPackage } from '@/lib/packages';
 import { cn } from '@/lib/cn';
 import { useBooking } from './BookingContext';
@@ -66,6 +66,17 @@ function PackageCard({ pkg, featured }: { pkg: LessonPackage; featured: boolean 
 
       <h3 className="display mt-5 text-5xl">{pkg.name}</h3>
       <p className={cn('prose-serif mt-2 text-lg', featured ? 'text-white/85' : 'text-ink-soft')}>{pkg.tagline}</p>
+
+      {pkg.path && (
+        <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl bg-river-50 px-3.5 py-3 text-sm font-semibold text-river" aria-label={`Lesson path: ${pkg.path.join(' then ')}`}>
+          {pkg.path.map((step, i) => (
+            <span key={step} className="flex items-center gap-2">
+              {i > 0 && <ArrowRight className="h-4 w-4 text-sunset-600" aria-hidden />}
+              <span className="rounded-full bg-white px-3 py-1 ring-1 ring-river/15">{step}</span>
+            </span>
+          ))}
+        </div>
+      )}
 
       <DurationRuler minutes={pkg.durationMin} label={pkg.durationLabel} inverse={featured} />
 

@@ -41,7 +41,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={api}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-4 z-[60] grid justify-items-end gap-2 sm:left-auto sm:right-4">
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] md:bottom-4 grid justify-items-end gap-2 sm:left-auto sm:right-4">
         <AnimatePresence initial={false}>
           {items.map((t) => {
             const Icon = t.kind === 'success' ? CheckCircle2 : t.kind === 'error' ? AlertCircle : Info;

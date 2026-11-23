@@ -54,10 +54,16 @@ export const bookingInput = z.object({
   company: z.string().max(0).optional(), // honeypot: real people never fill it in
 });
 
-export const bookingPatch = z.object({
-  id: z.string().min(1),
-  status: z.enum(BOOKING_STATUSES),
-});
+const label = z.string().trim().min(1).max(40);
+export const bookingPatch = z
+  .object({
+    id: z.string().min(1),
+    status: z.enum(BOOKING_STATUSES).optional(),
+    tags: z.array(label).max(12).optional(),
+    practiced: z.array(label).max(12).optional(),
+    lessonNotes: z.string().trim().max(2000, 'Keep lesson notes under 2000 characters.').optional(),
+  })
+  .refine((v) => v.status !== undefined || v.tags !== undefined || v.practiced !== undefined || v.lessonNotes !== undefined, 'Nothing to change.');
 
 const photoSrc = z
   .string()

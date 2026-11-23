@@ -89,6 +89,9 @@ export function Confirmation({ booking, onAnother }: { booking: Booking; onAnoth
           <p className="font-semibold text-ink">What happens next</p>
           <ul className="mt-1.5 list-disc space-y-1 pl-5">
             <li>Boaz reviews your request and confirms by text or email.</li>
+            {booking.packageId === 'first-cast' && (
+              <li>Your First Cast lesson starts in a relaxed backyard setup, then moves to the pond once your casting is sharp.</li>
+            )}
             <li>You will get the meeting spot and a weather check the day before.</li>
             <li>Bring sunscreen, water and a hat. Everything else is provided.</li>
           </ul>

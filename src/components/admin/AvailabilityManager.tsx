@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarClock, ChevronLeft, ChevronRight, Plus, Sun, Sunrise, Sunset, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, CalendarClock, ChevronLeft, ChevronRight, Plus, Sun, Sunrise, Sunset, Trash2, X } from 'lucide-react';
 import { api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { getPackage } from '@/lib/packages';
@@ -28,6 +28,7 @@ import {
   weekday,
 } from '@/lib/time';
 import type { AdminAvailability, AvailabilityWindow, Booking } from '@/lib/types';
+import { biteWindows, tideClock, tideClockShort, tideDay, tideMinutes, type BiteWindow, type TideExtreme, type TideRange } from '@/lib/tides';
 import { useRemote } from '@/hooks/useRemote';
 import { useToast } from './Toast';
 
@@ -89,9 +90,34 @@ function bookedIn(w: AvailabilityWindow, bookings: Booking[]): number {
   return bookings.filter((b) => toMin(b.start) < toMin(w.end) && toMin(w.start) < toMin(b.end)).length;
 }
 
+type TideDays = Record<string, TideExtreme[]>;
+
+/** Rising/falling "prime current" bands that touch a given day (legs can cross midnight, so use all days). */
+function dayBiteWindows(all: TideExtreme[], date: string): BiteWindow[] {
+  return biteWindows(all).filter((w) => tideDay(w.start) === date || tideDay(w.end) === date);
+}
+
+/** Minutes of a lesson block (HH:mm on `date`) that overlap a bite window. */
+function overlapMin(date: string, w: AvailabilityWindow, bw: BiteWindow): number {
+  const s = tideMinutes(`${date} ${w.start}`);
+  const e = tideMinutes(`${date} ${w.end}`);
+  return Math.max(0, Math.min(e, tideMinutes(bw.end)) - Math.max(s, tideMinutes(bw.start)));
+}
+
+const TideLine = ({ list }: { list: TideExtreme[] }) => (
+  <>
+    {list.map((e) => (
+      <span key={e.t} className="inline-flex items-center gap-0.5 whitespace-nowrap">
+        {e.type === 'H' ? <ArrowUp className="h-3 w-3" aria-label="High" /> : <ArrowDown className="h-3 w-3" aria-label="Low" />}
+        {tideClockShort(e.t)}
+      </span>
+    ))}
+  </>
+);
+
 /* ------------------------------------------------------------------ views */
 
-function MonthView({ month, selected, today, byDate, onSelect }: { month: string; selected: string; today: string; byDate: Map<string, DayData>; onSelect: (d: string) => void }) {
+function MonthView({ month, selected, today, byDate, tides, onSelect }: { month: string; selected: string; today: string; byDate: Map<string, DayData>; tides: TideDays; onSelect: (d: string) => void }) {
   return (
     <div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-ink-mute sm:gap-1.5 sm:text-sm">
@@ -140,6 +166,11 @@ function MonthView({ month, selected, today, byDate, onSelect }: { month: string
                 ))}
                 {windows.length > 3 && <span className="hidden text-[11px] font-semibold text-ink-mute sm:block">+{windows.length - 3} more</span>}
               </span>
+              {tides[d] && (
+                <span className="mt-auto hidden flex-wrap gap-x-1.5 pt-1 text-[10px] font-semibold leading-tight text-ink-mute sm:flex" title="High and low tides">
+                  <TideLine list={tides[d]} />
+                </span>
+              )}
             </button>
           );
         })}
@@ -148,7 +179,7 @@ function MonthView({ month, selected, today, byDate, onSelect }: { month: string
   );
 }
 
-function WeekView({ anchor, today, byDate, onSelect, onToggle }: { anchor: string; today: string; byDate: Map<string, DayData>; onSelect: (d: string) => void; onToggle: (w: AvailabilityWindow) => void }) {
+function WeekView({ anchor, today, byDate, tides, onSelect, onToggle }: { anchor: string; today: string; byDate: Map<string, DayData>; tides: TideDays; onSelect: (d: string) => void; onToggle: (w: AvailabilityWindow) => void }) {
   const start = startOfWeek(anchor);
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
   return (
@@ -162,6 +193,11 @@ function WeekView({ anchor, today, byDate, onSelect, onToggle }: { anchor: strin
               <span className="font-bold">{WEEKDAY_SHORT[weekday(d)]}</span>
               <span className={cn('display-md text-xl', d === today && 'rounded-full bg-river px-2 text-white')}>{fmtDayNum(d)}</span>
             </button>
+            {tides[d] && (
+              <p className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] font-semibold text-ink-mute" title="High and low tides">
+                <TideLine list={tides[d]} />
+              </p>
+            )}
             <ul className="mt-2 grid gap-1.5">
               {v?.windows.map((w) => (
                 <li key={w.id}>
@@ -204,10 +240,12 @@ function DayPanel({
   onRemove,
   onAdd,
   onSetDay,
+  allTides,
 }: {
   date: string;
   today: string;
   day: DayData;
+  allTides: TideExtreme[];
   onToggle: (w: AvailabilityWindow) => void;
   onRemove: (w: AvailabilityWindow) => void;
   onAdd: (blocks: Block[]) => Promise<void>;
@@ -219,6 +257,13 @@ function DayPanel({
   const valid = toMin(end) > toMin(start);
   const anyOpen = day.windows.some((w) => w.status === 'open');
   const anyBlocked = day.windows.some((w) => w.status === 'blocked');
+  const dayTides = allTides.filter((e) => tideDay(e.t) === date);
+  const bites = dayBiteWindows(allTides, date);
+  const tideNote = (w: AvailabilityWindow): string | null => {
+    if (!dayTides.length) return null;
+    const hit = bites.map((b) => ({ b, m: overlapMin(date, w, b) })).filter((x) => x.m >= 20).sort((a, c) => c.m - a.m)[0];
+    return hit ? `Moving water ${tideClock(hit.b.start)} to ${tideClock(hit.b.end)} (${hit.b.leg})` : 'Mostly slack water';
+  };
 
   return (
     <section aria-labelledby="day-title" className="rounded-2xl border border-sand-300 bg-white p-5 sm:p-6">
@@ -230,6 +275,26 @@ function DayPanel({
         {past && <span className="rounded-full bg-sand-200 px-2.5 py-1 text-xs font-bold text-ink-mute">Past</span>}
       </div>
 
+      {dayTides.length > 0 && (
+        <div className="mt-3 rounded-xl bg-river-950 p-3.5 text-white" data-testid="day-tides">
+          <p className="text-sm font-bold">Tides this day</p>
+          <ul className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+            {dayTides.map((e) => (
+              <li key={e.t} className="flex items-center gap-1.5">
+                {e.type === 'H' ? <ArrowUp className="h-4 w-4 text-sunset-400" aria-hidden /> : <ArrowDown className="h-4 w-4 text-river-200" aria-hidden />}
+                <span className="font-semibold">{e.type === 'H' ? 'High' : 'Low'}</span> {tideClock(e.t)}
+                <span className="text-river-200">{e.h.toFixed(1)} ft</span>
+              </li>
+            ))}
+          </ul>
+          {bites.length > 0 && (
+            <p className="mt-2 text-xs text-river-200">
+              Best current: {bites.map((b) => `${tideClock(b.start)} to ${tideClock(b.end)} (${b.leg})`).join(', ')}
+            </p>
+          )}
+        </div>
+      )}
+
       <ul className="mt-4 grid gap-2.5" data-testid="day-windows">
         {day.windows.length === 0 && <li className="rounded-lg border border-dashed border-sand-400 p-4 text-ink-soft">No time blocks on this day yet. Add one below.</li>}
         {day.windows.map((w) => {
@@ -240,6 +305,7 @@ function DayPanel({
               <div className="min-w-0 flex-1">
                 <p className={cn('font-bold', !open && 'text-ink-mute line-through')}>{fmtRange(w.start, w.end)}</p>
                 <p className="text-sm text-ink-soft">{n > 0 ? `${n} ${n === 1 ? 'lesson' : 'lessons'} booked in this block` : open ? 'Open for booking' : 'Blocked, hidden from guests'}</p>
+                {tideNote(w) && <p className="text-xs font-semibold text-river-600">{tideNote(w)}</p>}
               </div>
               <label className="flex items-center gap-2.5 text-sm font-semibold">
                 <Switch checked={open} onChange={() => onToggle(w)} label={`${fmtRange(w.start, w.end)} available`} />
@@ -495,6 +561,9 @@ export function AvailabilityManager() {
   const from = addDays(startOfMonth(month), -7);
   const to = addDays(endOfMonth(month), 7);
   const { data, error, refresh, setData } = useRemote<AdminAvailability>(`/api/availability?view=admin&from=${from}&to=${to}`, 15_000);
+  const tideRange = useRemote<TideRange>(`/api/tides?from=${from}&to=${to}`);
+  const tideDays: TideDays = tideRange.data?.days ?? {};
+  const allTides = useMemo(() => Object.values(tideDays).flat().sort((a, b) => a.t.localeCompare(b.t)), [tideDays]);
   const lastData = useRef<AdminAvailability | null>(null);
   if (data) lastData.current = data;
   const shown = data ?? lastData.current;
@@ -610,7 +679,7 @@ export function AvailabilityManager() {
         <div className="mt-4">
           {!shown && !error && <div className="h-80 animate-pulse rounded-xl bg-sand-100" />}
           {error && !shown && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-4 font-medium text-red-800">{error}</p>}
-          {shown && (view === 'month' ? <MonthView month={month} selected={anchor} today={today} byDate={byDate} onSelect={select} /> : <WeekView anchor={anchor} today={today} byDate={byDate} onSelect={select} onToggle={toggle} />)}
+          {shown && (view === 'month' ? <MonthView month={month} selected={anchor} today={today} byDate={byDate} tides={tideDays} onSelect={select} /> : <WeekView anchor={anchor} today={today} byDate={byDate} tides={tideDays} onSelect={select} onToggle={toggle} />)}
         </div>
 
         <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-soft">
@@ -627,11 +696,16 @@ export function AvailabilityManager() {
             Lessons booked
           </li>
           {view === 'week' && <li>Tap a block to switch it between open and blocked.</li>}
+          {allTides.length > 0 && (
+            <li className="flex items-center gap-1.5">
+              <ArrowUp className="h-3.5 w-3.5" aria-hidden /> high <ArrowDown className="ml-1 h-3.5 w-3.5" aria-hidden /> low tide times{tideRange.data?.source === 'simulated' ? ' (simulated, NOAA unreachable)' : ' (NOAA)'}
+            </li>
+          )}
         </ul>
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
-        <DayPanel date={anchor} today={today} day={day} onToggle={toggle} onRemove={(w) => void remove(w)} onAdd={addBlocks} onSetDay={(s) => void setDay(s)} />
+        <DayPanel date={anchor} today={today} day={day} allTides={allTides} onToggle={toggle} onRemove={(w) => void remove(w)} onAdd={addBlocks} onSetDay={(s) => void setDay(s)} />
         <BulkPanel today={today} anchor={anchor} onApply={applyBulk} />
       </div>
     </div>

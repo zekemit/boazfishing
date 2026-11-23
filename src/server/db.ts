@@ -22,6 +22,9 @@ function normalize(db: DB): DB {
   db.windows ??= [];
   db.bookings ??= [];
   db.photos = { ...defaultPhotos(), ...(db.photos ?? {}) };
+  db.notifications ??= [];
+  db.agendaSent ??= {};
+  db.calendarToken ||= crypto.randomBytes(24).toString('hex');
   if (!db.secret) db.secret = crypto.randomBytes(32).toString('hex');
   return db;
 }

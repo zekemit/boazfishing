@@ -44,6 +44,58 @@ export interface Booking {
   createdAt: string; // ISO
   updatedAt: string; // ISO
   sample?: boolean; // seeded demo data
+  // Instructor tools
+  tags?: string[]; // progress tags, e.g. "Graduated to Pond"
+  practiced?: string[]; // skills worked on in this lesson
+  lessonNotes?: string;
+  // Notification bookkeeping (prevents duplicate sends)
+  confirmationSentAt?: string;
+  reminderSentAt?: string;
+}
+
+/** Progress tags offered as one-tap chips (instructors can also add their own). */
+export const PROGRESS_TAGS = ['Backyard Casting', 'Knot Tying', 'Baiting & Hooks', 'Graduated to Pond', 'First Fish', 'Marsh Ready'] as const;
+export const PRACTICE_SKILLS = [
+  'Casting mechanics',
+  'Accuracy',
+  'Knots',
+  'Baiting a hook',
+  'Setting the hook',
+  'Reeling in',
+  'Handling and release',
+  'Reading the water',
+] as const;
+
+export type NotifyKind = 'student_confirmation' | 'student_reminder' | 'boaz_alert' | 'boaz_agenda' | 'test';
+export type NotifyChannel = 'email' | 'ntfy' | 'sms';
+export type NotifyStatus = 'sent' | 'simulated' | 'failed';
+
+/** One outgoing email or phone alert, kept so the instructor can see exactly what went out (or would have). */
+export interface NotificationEntry {
+  id: string;
+  at: string; // ISO
+  kind: NotifyKind;
+  channel: NotifyChannel;
+  to: string;
+  subject: string;
+  body: string;
+  status: NotifyStatus;
+  error?: string;
+  bookingId?: string;
+}
+
+export interface ChannelStatus {
+  channel: string;
+  label: string;
+  live: boolean;
+  detail: string;
+}
+
+export interface NotificationsPayload {
+  channels: ChannelStatus[];
+  boazPhone: string | null;
+  cronProtected: boolean;
+  entries: NotificationEntry[];
 }
 
 export const PHOTO_SLOT_IDS = [
@@ -75,6 +127,11 @@ export interface DB {
   windows: AvailabilityWindow[];
   bookings: Booking[];
   photos: PhotoMap;
+  notifications: NotificationEntry[];
+  /** date (YYYY-MM-DD) -> ISO time the day-of agenda was sent to the instructor */
+  agendaSent: Record<string, string>;
+  /** secret in the private calendar subscription URL */
+  calendarToken: string;
 }
 
 // ---- API payloads ----
@@ -95,6 +152,7 @@ export interface AdminAvailability {
 
 export interface BookingsPayload {
   today: string;
+  tz: string; // business time zone (IANA), used for calendar links
   bookings: Booking[];
 }
 

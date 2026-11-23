@@ -151,5 +151,8 @@ export function buildSeed(): DB {
     windows,
     bookings,
     photos: defaultPhotos(),
+    notifications: [],
+    agendaSent: {},
+    calendarToken: crypto.randomBytes(24).toString('hex'),
   };
 }

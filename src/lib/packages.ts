@@ -15,6 +15,8 @@ export interface LessonPackage {
   earliestStart?: string;
   includes: string[];
   highlight?: string;
+  /** The stages of a lesson that moves between places, shown as a progression on the card. */
+  path?: string[];
 }
 
 export const PACKAGES: LessonPackage[] = [
@@ -24,16 +26,18 @@ export const PACKAGES: LessonPackage[] = [
     level: 'Beginner',
     durationMin: 45,
     durationLabel: '45 minutes',
-    tagline: 'Your first fish starts with one good cast.',
+    tagline: 'Master the cast in a stress-free backyard, then take it to the pond and catch a real fish.',
     basePrice: 100,
     includedAnglers: 2,
     extraAnglerPrice: 0,
     maxAnglers: 2,
+    highlight: 'Best for first-timers',
+    path: ['Backyard training', 'Fish the pond'],
     includes: [
-      'Casting fundamentals, step by step',
-      'Knot tying: the two knots you will actually use',
+      'Relaxed backyard training: casting mechanics and accuracy, with no snags and no stress',
+      'Knot tying you can trust, practiced in the backyard first',
       'Baiting your own hook with cut bait',
-      'Setting the hook and reeling in with confidence',
+      'Then to the pond: put your new skills to work and land real fish',
     ],
   },
   {

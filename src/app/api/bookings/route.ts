@@ -1,9 +1,10 @@
-import type { NextRequest } from 'next/server';
+import { after, type NextRequest } from 'next/server';
 import type { Booking } from '@/lib/types';
 import { getPackage, priceFor } from '@/lib/packages';
 import { fromMin, toMin } from '@/lib/time';
 import { mutate, readDb } from '@/server/db';
-import { businessNow } from '@/server/clock';
+import { businessNow, businessTz } from '@/server/clock';
+import { notifyNewBooking } from '@/server/notify/service';
 import { bookingConflicts, isBookable } from '@/server/availability';
 import { clientIp, fail, guardAdmin, guarded, HttpError, json, readJson, zodFail } from '@/server/http';
 import { allow } from '@/server/rateLimit';
@@ -19,7 +20,7 @@ export async function GET() {
     if (denied) return denied;
     const db = await readDb(3000);
     const bookings = [...db.bookings].sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
-    return json({ today: businessNow().date, bookings });
+    return json({ today: businessNow().date, tz: businessTz(), bookings });
   });
 }
 
@@ -67,6 +68,8 @@ export async function POST(req: NextRequest) {
       db.bookings.push(created);
       return created;
     });
+    // Email the student and ping Boaz's phone after the response is sent. Can never fail the booking.
+    after(() => notifyNewBooking(booking));
     return json({ booking }, 201);
   });
 }
@@ -78,15 +81,20 @@ export async function PATCH(req: NextRequest) {
     if (denied) return denied;
     const parsed = bookingPatch.safeParse(await readJson(req));
     if (!parsed.success) return zodFail(parsed.error);
-    const { id, status } = parsed.data;
+    const { id, status, tags, practiced, lessonNotes } = parsed.data;
 
     const booking = await mutate((db) => {
       const b = db.bookings.find((x) => x.id === id);
       if (!b) throw new HttpError(404, 'That booking no longer exists.');
-      if (b.status === 'cancelled' && status !== 'cancelled' && bookingConflicts(db, b)) {
-        throw new HttpError(409, 'Someone else has booked that time since this was cancelled, so it cannot be restored.');
+      if (status !== undefined) {
+        if (b.status === 'cancelled' && status !== 'cancelled' && bookingConflicts(db, b)) {
+          throw new HttpError(409, 'Someone else has booked that time since this was cancelled, so it cannot be restored.');
+        }
+        b.status = status;
       }
-      b.status = status;
+      if (tags !== undefined) b.tags = [...new Set(tags)];
+      if (practiced !== undefined) b.practiced = [...new Set(practiced)];
+      if (lessonNotes !== undefined) b.lessonNotes = lessonNotes;
       b.updatedAt = new Date().toISOString();
       return b;
     });

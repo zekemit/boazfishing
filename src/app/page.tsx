@@ -12,6 +12,7 @@ import { Header } from '@/components/site/Header';
 import { Hero } from '@/components/site/Hero';
 import { MeetBoaz } from '@/components/site/MeetBoaz';
 import { MobileBookBar } from '@/components/site/MobileBookBar';
+import { BeginnerPath } from '@/components/site/BeginnerPath';
 import { Packages } from '@/components/site/Packages';
 import { Reviews } from '@/components/site/Reviews';
 import { WhyBoaz } from '@/components/site/WhyBoaz';
@@ -35,6 +36,7 @@ export default async function Home() {
       <main>
         <Hero photo={photos.hero} next={next} />
         <WhyBoaz />
+        <BeginnerPath />
         <Packages />
         <MeetBoaz photo={photos.bio} />
         <Gallery photos={gallery} />

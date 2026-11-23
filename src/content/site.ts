@@ -41,6 +41,27 @@ export const VALUE_PROPS = {
   },
 };
 
+/** The First Cast progression: shown on the site and repeated in the student's emails. */
+export const BEGINNER_PATH = {
+  heading: 'Start in the backyard. Finish at the pond.',
+  intro:
+    'First Cast is built for first-timers and the parents who worry about them: a calm, step-by-step lesson with no pressure, no snags, and a real fish waiting at the end.',
+  steps: [
+    {
+      title: 'Backyard training',
+      body: 'Every lesson starts in a relaxed backyard setup. With no trees, weeds or water to snag, beginners can focus on casting mechanics, accuracy and knot tying, and make their mistakes where they cost nothing.',
+      points: ['Casting mechanics and accuracy', 'Knots you can trust', 'No snags, no stress'],
+    },
+    {
+      title: 'Fish the pond',
+      body: 'Once your casting is dialed in and looking sharp, Boaz walks you over to the pond so you can put your new skills to work with real bait and go after real fish.',
+      points: ['Bait your own hook', 'Set the hook and reel it in', 'Handle and release with care'],
+    },
+  ],
+  gate: 'Pond time starts when your casting is ready. Boaz decides with you, never by the clock.',
+  reassurance: ['Safe and supportive for kids and nervous beginners', 'One or two students per lesson', 'Rods, reels and bait provided'],
+};
+
 export const MEET = {
   heading: 'Meet Boaz, the guy who would rather watch you land a fish than land one himself.',
   paragraphs: [
@@ -73,6 +94,10 @@ export const REVIEWS = [
 ];
 
 export const FAQS = [
+  {
+    q: 'How does the beginner lesson work?',
+    a: 'First Cast starts in a relaxed backyard setup, where you learn casting mechanics, accuracy and knot tying with no snags and no pressure. Once your casting is sharp, Boaz takes you over to the pond to fish with real bait and land real fish. It is a safe, step-by-step progression that works well for kids and nervous first-timers.',
+  },
   {
     q: 'What happens if the weather is bad?',
     a: 'Safety comes first. If lightning, high winds or heavy rain are in the forecast, Boaz will message you the morning of your lesson and move it to another open date at no charge. Light rain and overcast skies often fish great, so we go unless it is unsafe.',
