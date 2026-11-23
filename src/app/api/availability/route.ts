@@ -103,7 +103,24 @@ export async function POST(req: NextRequest) {
             fresh.push({ id: newId('w'), date: input.date, start: block.start, end: block.end, status: 'open' });
           }
           db.windows.push(...fresh);
-          return { added: fresh.length, skipped: 0, days: 1, changed: fresh.length, removed: 0 };
+          return { added: fresh.length, skipped: 0, days: 1, changed: fresh.length, removed: 0, ids: fresh.map((w) => w.id) };
+        }
+        case 'add-many': {
+          // The suggestion tool's "add all": add every item that still fits, skip the rest.
+          const ids: string[] = [];
+          let skipped = 0;
+          const days = new Set<string>();
+          for (const item of input.items) {
+            if (item.date < now.date || toMin(item.end) <= toMin(item.start) || findOverlap(db, item.date, item.start, item.end)) {
+              skipped++;
+              continue;
+            }
+            const w: AvailabilityWindow = { id: newId('w'), date: item.date, start: item.start, end: item.end, status: 'open' };
+            db.windows.push(w);
+            ids.push(w.id);
+            days.add(item.date);
+          }
+          return { added: ids.length, skipped, days: days.size, changed: ids.length, removed: 0, ids };
         }
         case 'bulk-add': {
           const dates = rangeDates(input.startDate, input.endDate, input.weekdays);

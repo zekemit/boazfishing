@@ -92,6 +92,14 @@ If you can't make a Google app password (2-Step Verification off, no phone handy
 - **Availability**: month and week views. In week view, tap any block to flip it between Open and Blocked. Day panel adds blocks (one-click presets or exact times). **Recurring availability** adds, blocks, reopens or removes blocks across a date range for chosen weekdays (e.g. every Sat and Sun morning in July).
 - **Photos**: upload, drag and drop (with preview before saving), or paste a URL. Per-photo focus sliders, caption and alt text. Uploads are resized, auto-rotated and stripped of metadata (including GPS).
 
+## Suggested availability (Admin > Availability, top of the page)
+
+One-tap suggestions for when to open your calendar. For each day you pick, it finds the high tides (NOAA), builds a window from 2 hours before to 1 hour after high tide (so Summer Angler, Sunset Session and First Cast all fit), trims it around your own calendar, skips anything already open or blocked, and shows exactly which lesson start times each window gives. **Add** opens it on the public booking calendar immediately; **Undo** takes it back; **Add all** adds everything listed.
+
+- **Connect your calendar** (optional): paste the calendar's secret iCal address (Google: Settings > your calendar > Integrate calendar > Secret address in iCal format; Apple: Public Calendar link; Outlook: published ICS link) or upload an `.ics` file. Linked calendars refresh on their own every 30 minutes. Recurring events, time zones, cancelled events and "free" events are handled; lessons from this site's own calendar feed are ignored. Only busy times are used, and the address is never sent back to the browser.
+- **What I want:** days of the week, earliest/latest time, a buffer around events, how far ahead to look, whether all-day events block the day, and an option for extra First Cast-only blocks in the free time between tide windows.
+- Code: `src/server/suggest.ts` (engine), `src/server/calendarImport.ts` (.ics reader), `src/app/api/suggestions`, `src/app/api/calendar/import`.
+
 ## Photos: drop-in file paths
 
 Put a JPG at these paths and refresh, or use Admin > Photos with no file copying.

@@ -30,6 +30,7 @@ import {
 import type { AdminAvailability, AvailabilityWindow, Booking } from '@/lib/types';
 import { biteWindows, tideClock, tideClockShort, tideDay, tideMinutes, type BiteWindow, type TideExtreme, type TideRange } from '@/lib/tides';
 import { useRemote } from '@/hooks/useRemote';
+import { SuggestedAvailability } from './SuggestedAvailability';
 import { useToast } from './Toast';
 
 type Block = { start: string; end: string };
@@ -651,6 +652,7 @@ export function AvailabilityManager() {
 
   return (
     <div className="grid gap-6">
+      <SuggestedAvailability onChanged={() => { void refresh(); notifyChange(); }} />
       <div className="rounded-2xl border border-sand-300 bg-white p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">

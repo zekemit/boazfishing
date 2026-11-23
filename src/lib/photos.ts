@@ -64,13 +64,13 @@ const hide = (p: PhotoSettings): PhotoSettings => ({ ...p, hidden: true });
 /** Starting copy and framing for each slot. The images themselves come from the default file paths. */
 export function defaultPhotos(): PhotoMap {
   return {
-    hero: base('A smiling young angler holding up a big redfish at a marsh dock', '', 35, 45),
+    hero: base('A smiling young angler kneeling on a sunny dock holding up a long, silver gar', '', 50, 35),
     bio: base('A smiling young angler holding a catfish with fish grips', '', 50, 35),
     'gallery-1': base('Two young anglers sharing a rod on a wooden boardwalk over the marsh', 'Learning on the boardwalk', 45, 45),
     'gallery-2': base('A young angler throwing a cast net in the shallows at low tide', 'Cast net practice at low tide', 55, 55),
     'gallery-3': base('A laughing young angler holding a big redfish', 'Redfish!', 50, 50),
     'gallery-4': base('A smiling young angler holding a big redfish on a wooden dock over the water', 'Redfish off the dock', 40, 30),
-    'gallery-5': base('A smiling young angler kneeling on a dock holding up a long, silver gar', 'A gar! You never know what bites', 50, 40),
+    'gallery-5': base('A smiling young angler holding up a big redfish on the water at golden hour', 'Golden-hour redfish', 55, 45),
     'gallery-6': hide(base('', '', 50, 40)),
   };
 }

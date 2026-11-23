@@ -13,6 +13,10 @@ export const blockSchema = z
 export const availabilityAction = z.discriminatedUnion('action', [
   z.object({ action: z.literal('add'), date: dateStr, blocks: z.array(blockSchema).min(1).max(8) }),
   z.object({
+    action: z.literal('add-many'),
+    items: z.array(z.object({ date: dateStr, start: timeStr, end: timeStr })).min(1).max(80),
+  }),
+  z.object({
     action: z.literal('bulk-add'),
     startDate: dateStr,
     endDate: dateStr,

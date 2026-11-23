@@ -133,6 +133,40 @@ export interface DB {
   agendaSent: Record<string, string>;
   /** secret in the private calendar subscription URL */
   calendarToken: string;
+  /** Boaz's own calendar (imported read-only) so suggestions can avoid his busy times. */
+  calendarImport?: CalendarImport | null;
+  suggestPrefs?: SuggestPrefs;
+}
+
+/** One busy block from the imported calendar. s/e are epoch milliseconds. */
+export interface BusyEvent {
+  s: number;
+  e: number;
+  title: string;
+  allDay: boolean;
+}
+export interface CalendarImport {
+  source: 'url' | 'file';
+  /** The secret iCal address, kept server-side and never sent back to the browser. */
+  url?: string;
+  label: string;
+  syncedAt: string;
+  events: BusyEvent[];
+  /** The last refresh failed; the older events are still used. */
+  error?: string;
+}
+export interface SuggestPrefs {
+  /** Days of the week Boaz wants lessons (0 = Sunday). */
+  days: number[];
+  earliest: string;
+  latest: string;
+  /** Free minutes kept clear before and after anything on his calendar. */
+  bufferMin: number;
+  aheadDays: number;
+  /** Count all-day calendar events (holidays, birthdays) as busy. */
+  allDayBusy: boolean;
+  /** Also suggest First Cast-only blocks on wanted days that have no tide window. */
+  flex: boolean;
 }
 
 // ---- API payloads ----
