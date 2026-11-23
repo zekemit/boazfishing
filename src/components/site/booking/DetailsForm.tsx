@@ -187,7 +187,9 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
             </button>
           </div>
           <p className="text-sm text-ink-soft">
-            {pkg.name} includes {pkg.includedAnglers} anglers. Each extra is +{formatPrice(pkg.extraAnglerPrice)}, up to {pkg.maxAnglers}.
+            {pkg.maxAnglers > pkg.includedAnglers
+              ? `${pkg.name} includes ${pkg.includedAnglers} anglers. Each extra is +${formatPrice(pkg.extraAnglerPrice)}, up to ${pkg.maxAnglers}.`
+              : `Lessons fit one or two anglers. The price is the same for either.`}
           </p>
         </div>
         <FieldError id="err-anglers" message={errors.anglers} />
@@ -238,7 +240,7 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
             <>Confirm booking, {formatPrice(total)}</>
           )}
         </button>
-        <p className="text-sm text-ink-soft">No payment now. You pay Boaz at the dock.</p>
+        <p className="text-sm text-ink-soft">No payment now. You pay Boaz in person.</p>
       </div>
     </form>
   );

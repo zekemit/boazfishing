@@ -5,11 +5,11 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Boaz Fishing Co. | Summer fishing lessons and guided trips',
+    default: 'Boaz Fishing Co. | Summer fishing lessons',
     template: '%s | Boaz Fishing Co.',
   },
   description:
-    'Patient, hands-on summer fishing lessons for beginners, families and anglers ready to land bigger fish. All gear provided. Book your lesson online.',
+    'Patient, hands-on summer fishing lessons for beginners, kids and anglers ready to land bigger fish. All gear provided. Book your lesson online.',
   openGraph: {
     title: 'Boaz Fishing Co. | Master the water this summer',
     description: 'Hands-on fishing lessons for every skill level. All gear provided. Book online in a minute.',

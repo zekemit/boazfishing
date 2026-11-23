@@ -71,7 +71,7 @@ function BookingCard({ booking, today, onAction }: { booking: Booking; today: st
         <div className="sm:text-right">
           <p className="display-md text-xl">{pkg?.name ?? booking.packageId}</p>
           <p className="text-sm text-ink-mute">{pkg?.durationLabel}</p>
-          <p className="mt-1 font-bold">{formatPrice(booking.totalPrice)} due at dock</p>
+          <p className="mt-1 font-bold">{formatPrice(booking.totalPrice)} due in person</p>
         </div>
       </div>
 
@@ -235,7 +235,7 @@ export function BookingsDashboard({ remote }: { remote: Remote<BookingsPayload> 
           <p className="display mt-1 text-4xl" data-testid="stat-upcoming">{groups.upcoming.length}</p>
         </div>
         <div className="rounded-xl border border-sand-300 bg-white p-5">
-          <p className="text-sm font-semibold text-ink-mute">Expected at the dock</p>
+          <p className="text-sm font-semibold text-ink-mute">Expected in person</p>
           <p className="display mt-1 text-4xl">{formatPrice(revenue)}</p>
         </div>
       </div>

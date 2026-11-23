@@ -50,7 +50,7 @@ export function Gallery({ photos }: { photos: PublicPhoto[] }) {
         <div className="max-w-2xl">
           <h2 className="display-md text-4xl sm:text-5xl">The summer catch</h2>
           <p className="prose-serif mt-4 text-lg text-white/80">
-            Fresh from the boat. Tap any photo to see it full size.
+            Fresh from the dock and the pond. Tap any photo to see it full size.
           </p>
         </div>
 

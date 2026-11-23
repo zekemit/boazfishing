@@ -5,11 +5,11 @@ import { PACKAGES, formatPrice, type LessonPackage } from '@/lib/packages';
 import { cn } from '@/lib/cn';
 import { useBooking } from './BookingContext';
 
-const SCALE_MIN = 240; // the ruler runs 0 to 4 hours
+const SCALE_MIN = 120; // the ruler runs 0 to 2 hours
 
 /** A tape measure showing how long the lesson is. The amber run is the lesson; ticks every 30 minutes. */
 export function DurationRuler({ minutes, label, inverse }: { minutes: number; label: string; inverse?: boolean }) {
-  const ticks = Array.from({ length: SCALE_MIN / 30 + 1 }, (_, i) => i * 30);
+  const ticks = Array.from({ length: SCALE_MIN / 15 + 1 }, (_, i) => i * 15);
   return (
     <div role="img" aria-label={`Lesson length: ${label}`} className="mt-6">
       <p className="mb-2 flex items-baseline justify-between text-sm">
@@ -24,7 +24,7 @@ export function DurationRuler({ minutes, label, inverse }: { minutes: number; la
             key={t}
             className={cn(
               'absolute top-3 w-px',
-              t % 60 === 0 ? 'h-3.5' : 'h-2',
+              t % 30 === 0 ? 'h-3.5' : 'h-2',
               inverse ? 'bg-white/45' : 'bg-river/40',
               t === SCALE_MIN && '-translate-x-px',
             )}
@@ -33,8 +33,8 @@ export function DurationRuler({ minutes, label, inverse }: { minutes: number; la
         ))}
       </div>
       <div className={cn('mt-1 flex justify-between text-xs font-medium tabular-nums', inverse ? 'text-white/60' : 'text-ink-mute')}>
-        {[0, 1, 2, 3, 4].map((h) => (
-          <span key={h}>{h === 4 ? '4 hr' : h}</span>
+        {['0', '30 min', '1 hr', '90 min', '2 hr'].map((label) => (
+          <span key={label}>{label}</span>
         ))}
       </div>
     </div>
@@ -76,7 +76,9 @@ function PackageCard({ pkg, featured }: { pkg: LessonPackage; featured: boolean 
         </span>
       </p>
       <p className={cn('mt-1 text-sm', featured ? 'text-white/70' : 'text-ink-mute')}>
-        +{formatPrice(pkg.extraAnglerPrice)} per extra angler, up to {pkg.maxAnglers}. Pay at the dock.
+        {pkg.maxAnglers > pkg.includedAnglers
+          ? `+${formatPrice(pkg.extraAnglerPrice)} per extra angler, up to ${pkg.maxAnglers}. Pay in person.`
+          : 'One or two anglers, same price. Pay in person.'}
       </p>
 
       <ul className={cn('mt-6 grid gap-3 border-t pt-6', featured ? 'border-white/15' : 'border-sand-300')}>

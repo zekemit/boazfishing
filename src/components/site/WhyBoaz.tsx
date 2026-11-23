@@ -9,7 +9,7 @@ export function WhyBoaz() {
         <div className="max-w-2xl">
           <h2 className="display-md text-4xl sm:text-5xl">Why fish with Boaz</h2>
           <p className="prose-serif mt-4 text-lg text-ink-soft">
-            Fishing looks simple until you are standing on a boat with a tangled line and no idea where the fish went. Boaz fixes
+            Fishing looks simple until you are standing at the water's edge with a tangled line and no idea where the fish went. Boaz fixes
             that, one small step at a time.
           </p>
         </div>

@@ -17,23 +17,23 @@ export const NAV = [
 
 export const HERO = {
   headline: 'Master the water this summer with Boaz Fishing Co.',
-  sub: 'Patient, hands-on fishing lessons for first-timers, families and anglers ready to land bigger fish. Rods, reels and tackle are already on the boat. You bring the sunscreen.',
+  sub: 'Patient, hands-on fishing lessons at the dock and the neighborhood pond, for first-timers, kids and anglers ready to land bigger fish. Rods, reels and bait are provided. You bring the sunscreen.',
   badges: ['100% gear provided', 'All skill levels', 'Summer sessions now open'],
 };
 
 export const VALUE_PROPS = {
   gear: {
-    title: 'Everything is already on the boat',
-    body: 'Show up and fish. Premium rods and reels, tackle, lures and bait are covered, so nothing stands between you and your first bite.',
-    items: ['Rods and reels', 'Lures and tackle', 'Bait', 'Nets and tools'],
+    title: 'Everything you need is provided',
+    body: 'Show up and fish. Rods, reels, hooks and fresh cut and live bait are covered, so nothing stands between you and your first bite.',
+    items: ['Rods and reels', 'Cut and live bait', 'Hooks, line and weights', 'Nets and tools'],
   },
   coaching: {
     title: 'Coaching that moves at your speed',
-    body: 'One-on-one or a small group, always. Boaz breaks every skill into small, fixable steps, so nobody gets rushed, and nobody gets left behind.',
+    body: 'One angler or two, always. Boaz breaks every skill into small, fixable steps, so nobody gets rushed, and nobody gets left behind.',
   },
   spots: {
-    title: 'Honey holes you will not find on a map',
-    body: 'Skip the guesswork. Boaz fishes these waters all summer and takes you to the spots most people never find.',
+    title: 'Honey holes right in your neighborhood',
+    body: 'Skip the guesswork. Boaz teaches at the local docks and neighborhood ponds, and knows which spots are holding fish right now.',
   },
   ethics: {
     title: 'Catch and release, done right',
@@ -44,7 +44,7 @@ export const VALUE_PROPS = {
 export const MEET = {
   heading: 'Meet Boaz, the guy who would rather watch you land a fish than land one himself.',
   paragraphs: [
-    'Every summer, Boaz is on the water at first light and back out again at golden hour. Teaching is the part he loves most.',
+    'Every summer, Boaz is out at the local docks and neighborhood ponds from first light to sunset. Teaching is the part he loves most.',
     'He coaches the way good mentors do: show it once, let you try, fix one thing at a time. No jargon, no rushing, and no judgment when the line tangles. (It will tangle. That is part of the lesson.)',
     'Whether you are nine or ninety, you will learn to cast, tie a knot you can trust, read the water and handle a fish with care. You will also learn why the fish were where they were, so next time you can find them yourself.',
   ],
@@ -54,7 +54,7 @@ export const MEET = {
 export const REVIEWS = [
   {
     quote:
-      'My daughter is eight and had never held a rod. Boaz had her casting on her own in twenty minutes and landing a fish before the second hour was up. She has not stopped talking about it.',
+      'My daughter is eight and had never held a rod. Boaz had her casting on her own in ten minutes and she landed a fish before the lesson was over. She has not stopped talking about it.',
     name: 'Dana R.',
     context: 'Parent of a first-time angler, First Cast',
   },
@@ -62,13 +62,13 @@ export const REVIEWS = [
     quote:
       'I have fished for years and still learned more in one Summer Angler morning than in five seasons of guessing. The structure tips alone paid for the trip.',
     name: 'Marcus T.',
-    context: 'Summer Angler half-day',
+    context: 'Summer Angler',
   },
   {
     quote:
-      'We booked the Sunset Session for a family outing: three generations, one boat, zero stress. Boaz kept everyone laughing and everyone catching. We are already planning next summer.',
-    name: 'The Okafor family',
-    context: 'Sunset Session',
+      'I booked the Sunset Session for me and my son. Forty-five quiet minutes at the pond, and Boaz kept him laughing and catching the whole time. We are already planning next summer.',
+    name: 'Tomas A.',
+    context: 'Sunset Session, parent and son',
   },
 ];
 
@@ -79,11 +79,11 @@ export const FAQS = [
   },
   {
     q: 'What should we bring?',
-    a: 'Sunscreen, a hat, polarized sunglasses if you have them, water, snacks and flat-soled shoes with grip. Rods, reels, tackle and bait are all provided. A small cooler is handy if you plan to keep a legal catch.',
+    a: 'Sunscreen, a hat, polarized sunglasses if you have them, water, snacks and flat-soled shoes with grip. Rods, reels and bait are all provided. A small cooler is handy if you plan to keep a legal catch.',
   },
   {
     q: 'What ages can join?',
-    a: 'All ages. Kids as young as five do great with a parent on board, and Boaz adjusts the pace and the gear to fit. Teens and adults get the full technique deep dive. Put everyone’s ages in the booking notes so he can plan.',
+    a: 'All ages. Kids as young as five do great with a parent beside them, and Boaz adjusts the pace and the gear to fit. Each lesson fits one or two anglers, and a parent can join in or just watch. Teens and adults get the full technique deep dive. Put everyone’s ages in the booking notes so he can plan.',
   },
   {
     q: 'Do I need a fishing license?',
@@ -91,6 +91,6 @@ export const FAQS = [
   },
   {
     q: 'How do payment and cancellations work?',
-    a: 'You do not pay to reserve a time. Settle up with Boaz at the dock. If plans change, let him know at least 24 hours ahead and the time goes straight back on the calendar for someone else.',
+    a: 'You do not pay to reserve a time. Settle up with Boaz in person at your lesson. If plans change, let him know at least 24 hours ahead and the time goes straight back on the calendar for someone else.',
   },
 ];

@@ -86,7 +86,7 @@ export function Summary({ pkg, date, start, anglers, showAnglers }: SummaryProps
             </div>
           )}
           <div className="mt-1 flex justify-between border-t border-sand-300 pt-2 text-base font-bold">
-            <dt>Total, paid at the dock</dt>
+            <dt>Total, paid in person</dt>
             <dd>{formatPrice(priceFor(pkg, anglers))}</dd>
           </div>
         </dl>

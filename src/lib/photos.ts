@@ -63,13 +63,13 @@ const base = (alt: string, caption: string, focusX = 50, focusY = 40): PhotoSett
 export function defaultPhotos(): PhotoMap {
   return {
     hero: base('Two young anglers working a deeply bent rod on calm, glassy water under a clear blue sky', '', 70, 20),
-    bio: base('Boaz on the boat, smiling and holding a freshly caught striped bass', '', 50, 35),
-    'gallery-1': base('A striped bass hooked on a spoon lure, dangling boat-side while the angler holds the rod high', 'Striper hooked boat-side', 55, 35),
+    bio: base('Boaz smiling and holding a freshly caught striped bass', '', 50, 35),
+    'gallery-1': base('A hooked striped bass dangling at the edge of the water while the angler holds the rod high', 'Striper on the line', 55, 35),
     'gallery-2': base('A grinning angler holding up a silver catfish next to the cooler', 'First-fish grin', 50, 30),
-    'gallery-3': base('A hands-on lesson in handling a big catfish on the boat deck', 'Hands-on handling lesson', 50, 50),
+    'gallery-3': base('A hands-on lesson in handling a big catfish on the deck', 'Hands-on handling lesson', 50, 50),
     'gallery-4': base('Two young anglers fighting a fish with the rod bent over calm water', 'Fish on! Rod doubled over', 60, 35),
     'gallery-5': base('A smiling angler holding a striped bass across their chest', 'A summer striper to remember', 50, 35),
-    'gallery-6': base('A fresh catch from a summer lesson', 'Fresh from the boat', 50, 40),
+    'gallery-6': base('A fresh catch from a summer lesson', 'Fresh from the water', 50, 40),
   };
 }
 

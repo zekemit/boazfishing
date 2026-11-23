@@ -20,7 +20,7 @@ function buildIcs(b: Booking, lessonName: string): string {
     `DTSTART:${dt(b.date, b.start)}`,
     `DTEND:${dt(b.date, b.end)}`,
     `SUMMARY:${lessonName} with Boaz Fishing Co.`,
-    `DESCRIPTION:Confirmation ${b.code}. ${b.anglers} angler${b.anglers === 1 ? '' : 's'}. Boaz will confirm the meeting spot by text or email. Pay at the dock.`,
+    `DESCRIPTION:Confirmation ${b.code}. ${b.anglers} angler${b.anglers === 1 ? '' : 's'}. Boaz will confirm the meeting spot by text or email. Pay in person.`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
@@ -49,7 +49,7 @@ export function Confirmation({ booking, onAnother }: { booking: Booking; onAnoth
     ['Date', fmtDateLong(booking.date)],
     ['Time', fmtRange(booking.start, booking.end)],
     ['Anglers', `${booking.anglers}, ${EXPERIENCE_LABELS[booking.experience].toLowerCase()}`],
-    ['Due at the dock', formatPrice(booking.totalPrice)],
+    ['Due at your lesson', formatPrice(booking.totalPrice)],
   ];
 
   return (
@@ -90,7 +90,7 @@ export function Confirmation({ booking, onAnother }: { booking: Booking; onAnoth
           <ul className="mt-1.5 list-disc space-y-1 pl-5">
             <li>Boaz reviews your request and confirms by text or email.</li>
             <li>You will get the meeting spot and a weather check the day before.</li>
-            <li>Bring sunscreen, water and a hat. Everything else is on the boat.</li>
+            <li>Bring sunscreen, water and a hat. Everything else is provided.</li>
           </ul>
         </div>
       </div>

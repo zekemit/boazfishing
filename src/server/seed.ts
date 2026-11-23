@@ -140,8 +140,8 @@ export function buildSeed(): DB {
       email: 'marcus.tran@example.com',
       phone: '(555) 010-0163',
       experience: 'confident',
-      anglers: 3,
-      notes: 'Family evening on the water. Kids are 7, 10 and 12.',
+      anglers: 2,
+      notes: 'Evening at the pond with my daughter. She is 9.',
     }, 'completed', 9 * 24 * H);
   }
 
