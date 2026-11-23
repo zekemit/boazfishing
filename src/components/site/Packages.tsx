@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Waves } from 'lucide-react';
 import { PACKAGES, formatPrice, type LessonPackage } from '@/lib/packages';
 import { cn } from '@/lib/cn';
 import { useBooking } from './BookingContext';
@@ -79,6 +79,13 @@ function PackageCard({ pkg, featured }: { pkg: LessonPackage; featured: boolean 
       )}
 
       <DurationRuler minutes={pkg.durationMin} label={pkg.durationLabel} inverse={featured} />
+
+      {pkg.tideGate && (
+        <p className={cn('mt-4 flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-semibold', featured ? 'bg-white/12 text-white' : 'bg-river-50 text-river')}>
+          <Waves className="h-4 w-4 shrink-0" aria-hidden />
+          {pkg.tideGate.label}, when the fish move in to feed
+        </p>
+      )}
 
       <p className="mt-6 flex items-baseline gap-2">
         <span className="display text-5xl">{formatPrice(pkg.basePrice)}</span>

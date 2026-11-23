@@ -99,6 +99,10 @@ export const FAQS = [
     a: 'First Cast starts in a relaxed backyard setup, where you learn casting mechanics, accuracy and knot tying with no snags and no pressure. Once your casting is sharp, Boaz takes you over to the pond to fish with real bait and land real fish. It is a safe, step-by-step progression that works well for kids and nervous first-timers.',
   },
   {
+    q: 'Why do the Summer Angler and Sunset Session times change from day to day?',
+    a: 'Those two lessons are timed to the tide. Boaz starts them 1 to 2 hours before high tide, when moving water pushes bait and fish in close. Because high tide shifts about 50 minutes later each day, the start times you see on the calendar shift with it. First Cast is not tide-timed.',
+  },
+  {
     q: 'What happens if the weather is bad?',
     a: 'Safety comes first. If lightning, high winds or heavy rain are in the forecast, Boaz will message you the morning of your lesson and move it to another open date at no charge. Light rain and overcast skies often fish great, so we go unless it is unsafe.',
   },
@@ -112,7 +116,7 @@ export const FAQS = [
   },
   {
     q: 'Do I need a fishing license?',
-    a: 'Rules depend on where we fish and how old each angler is. Once you book, Boaz will confirm exactly what you need and point you to the quickest way to get it.',
+    a: 'No. You do not need a fishing license for your lesson with Boaz. Just show up ready to fish.',
   },
   {
     q: 'How do payment and cancellations work?',

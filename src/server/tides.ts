@@ -175,3 +175,47 @@ export async function getTideRange(from: string, to: string): Promise<TideRange>
     return { station: STATION, source, days };
   });
 }
+
+/* ------------------------------------------------------------ high tides */
+
+const BLOCK_DAYS = 60;
+const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
+const dayString = (n: number) => new Date(n * 86_400_000).toISOString().slice(0, 10);
+const blockCache = () => ((globalThis as unknown as { __boazHighs?: Map<number, { at: number; highs: string[] }> }).__boazHighs ??= new Map());
+
+/** Every NOAA predicted high tide in one fixed 60 day block, as local "YYYY-MM-DD HH:mm" strings. Stale data beats none. */
+async function highsForBlock(block: number): Promise<string[] | null> {
+  const hit = blockCache().get(block);
+  if (hit && Date.now() - hit.at < 12 * 3600_000) return hit.highs;
+  try {
+    const start = dayString(block * BLOCK_DAYS - 1);
+    const end = dayString((block + 1) * BLOCK_DAYS);
+    const res = await noaa<{ predictions: { t: string; type: 'H' | 'L' }[] }>({ product: 'predictions', interval: 'hilo', begin_date: yyyymmdd(start), end_date: yyyymmdd(end) });
+    const highs = (res.predictions ?? []).filter((x) => x.type === 'H').map((x) => x.t);
+    if (!highs.length) throw new Error('no predictions');
+    blockCache().set(block, { at: Date.now(), highs });
+    return highs;
+  } catch {
+    return hit?.highs ?? null;
+  }
+}
+
+/**
+ * High tide times for every date in [from, to] (YYYY-MM-DD), as minutes after that date's midnight, including
+ * the highs just before and after so lessons near midnight are handled. Returns null when NOAA can't be reached
+ * and nothing is cached, so callers offer nothing instead of guessing.
+ */
+export async function getHighTides(from: string, to: string): Promise<Map<string, number[]> | null> {
+  const blocks: number[] = [];
+  for (let b = Math.floor((dayNumber(from) - 1) / BLOCK_DAYS); b <= Math.floor((dayNumber(to) + 1) / BLOCK_DAYS); b++) blocks.push(b);
+  const parts = await Promise.all(blocks.map(highsForBlock));
+  if (parts.some((p) => p === null)) return null;
+  const all = parts.flat() as string[];
+  const out = new Map<string, number[]>();
+  for (let n = dayNumber(from); n <= dayNumber(to); n++) {
+    const date = dayString(n);
+    const mid = tideMinutes(`${date} 00:00`);
+    out.set(date, all.map((t) => tideMinutes(t) - mid).filter((m) => m > -300 && m < 1440 + 300).sort((a, b) => a - b));
+  }
+  return out;
+}

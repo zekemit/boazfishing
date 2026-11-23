@@ -1,10 +1,11 @@
 import type { NextRequest } from 'next/server';
 import type { AvailabilityWindow, DB } from '@/lib/types';
 import { getPackage } from '@/lib/packages';
-import { addDays, eachDate, fmtRange, isValidDate, toMin, weekday } from '@/lib/time';
+import { addDays, eachDate, fmtRange, fromMin, isValidDate, toMin, weekday } from '@/lib/time';
 import { mutate, readDb } from '@/server/db';
 import { businessNow } from '@/server/clock';
 import { bookableDays, isActive, overlaps } from '@/server/availability';
+import { getHighTides } from '@/server/tides';
 import { fail, guardAdmin, guarded, HttpError, json, readJson, zodFail } from '@/server/http';
 import { newId } from '@/server/seed';
 import { availabilityAction, windowPatch } from '@/server/validate';
@@ -60,8 +61,17 @@ export async function GET(req: NextRequest) {
 
     const pkg = getPackage(sp.get('package'));
     if (!pkg) return fail(400, 'Unknown lesson package.');
-    const { days, next } = bookableDays(db, pkg, now);
-    return json({ today: now.date, packageId: pkg.id, days, next });
+    let tides: Awaited<ReturnType<typeof getHighTides>> = null;
+    if (pkg.tideGate) {
+      const dates = db.windows.filter((w) => w.status === 'open' && w.date >= now.date).map((w) => w.date).sort();
+      if (dates.length) tides = await getHighTides(dates[0], dates[dates.length - 1]);
+      if (dates.length && !tides) return json({ today: now.date, packageId: pkg.id, days: {}, next: null, tideUnavailable: true });
+    }
+    const { days, next } = bookableDays(db, pkg, now, tides ?? undefined);
+    // For tide-gated lessons, tell the page when high tide is so it can explain the start times.
+    const highTides: Record<string, string[]> = {};
+    if (tides) for (const date of Object.keys(days)) highTides[date] = (tides.get(date) ?? []).filter((m) => m >= 0 && m < 1440).map(fromMin);
+    return json({ today: now.date, packageId: pkg.id, days, next, ...(pkg.tideGate ? { highTides, timingNote: pkg.tideGate.label } : {}) });
   });
 }
 

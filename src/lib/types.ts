@@ -143,6 +143,11 @@ export interface PublicAvailability {
   /** date -> bookable start times for this package (already excludes booked / blocked / past) */
   days: Record<string, string[]>;
   next: { date: string; start: string } | null;
+  /** Tide-gated lessons only: high tide times per date, and the rule in words. */
+  highTides?: Record<string, string[]>;
+  timingNote?: string;
+  /** True when NOAA tide times could not be loaded, so a tide-gated lesson shows no times. */
+  tideUnavailable?: boolean;
 }
 
 export interface AdminAvailability {

@@ -7,6 +7,7 @@ import { businessNow, businessTz } from '@/server/clock';
 import { cancelPath } from '@/server/cancel';
 import { notifyNewBooking, notifyStatusChange } from '@/server/notify/service';
 import { bookingConflicts, isBookable } from '@/server/availability';
+import { getHighTides } from '@/server/tides';
 import { clientIp, fail, guardAdmin, guarded, HttpError, json, readJson, zodFail } from '@/server/http';
 import { allow } from '@/server/rateLimit';
 import { newCode, newId } from '@/server/seed';
@@ -43,9 +44,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Tide times are fetched before the locked transaction so the lock is never held during a network call.
+    const tides = pkg.tideGate ? await getHighTides(input.date, input.date) : null;
+    if (pkg.tideGate && !tides) return fail(503, 'Tide times are temporarily unavailable, so this lesson can\'t be booked right now. Please try again in a few minutes.');
+
     const booking = await mutate((db) => {
       const now = businessNow();
-      if (!isBookable(db, pkg, input.date, input.start, now)) {
+      if (!isBookable(db, pkg, input.date, input.start, now, tides ?? undefined)) {
         throw new HttpError(409, 'Sorry, that time was just taken. Please pick another.');
       }
       const created: Booking = {

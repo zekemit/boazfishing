@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { AlertCircle, Check } from 'lucide-react';
+import { AlertCircle, Check, Waves } from 'lucide-react';
 import { ApiError, api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { PACKAGES, formatPrice, getPackage } from '@/lib/packages';
@@ -262,6 +262,7 @@ export function Booking() {
                                   <span className="text-sm text-ink-mute">{p.durationLabel}</span>
                                 </span>
                                 <span className="mt-0.5 block text-ink-soft">{p.tagline}</span>
+                                {p.tideGate && <span className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-river"><Waves className="h-4 w-4" aria-hidden />{p.tideGate.label}</span>}
                               </span>
                               <span className="shrink-0 text-right">
                                 <span className="display-md block text-xl">{formatPrice(p.basePrice)}</span>
@@ -342,7 +343,18 @@ export function Booking() {
                                 setNotice(null);
                               }}
                             />
-                            {!monthHasDays && (
+                            {avail?.tideUnavailable && (
+                              <p role="alert" className="mt-4 rounded-lg border border-sunset-300 bg-sunset-50 p-4 text-sm text-sunset-700">
+                                Tide times are loading slowly right now, so start times for {pkg?.name} can&apos;t be shown. Please try again in a minute, or pick another lesson.
+                              </p>
+                            )}
+                            {pkg?.tideGate && !avail?.tideUnavailable && (
+                              <p className="mt-4 flex items-start gap-2 rounded-lg bg-river-50 p-3 text-sm text-river">
+                                <Waves className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                                {pkg.name} runs on the incoming tide, so start times follow the tide each day.
+                              </p>
+                            )}
+                            {!monthHasDays && !avail?.tideUnavailable && (
                               <p className="mt-4 rounded-lg bg-sand-100 p-4 text-sm text-ink-soft">
                                 No open dates in {fmtMonth(viewMonth)}.{' '}
                                 {nextOpenAfter && (
@@ -371,6 +383,15 @@ export function Booking() {
                                     ? `Your lesson runs ${fmt12(start)} to ${fmt12(fromMin(toMin(start) + pkg.durationMin))}.`
                                     : `Choose a start time. The lesson runs ${pkg.durationLabel}.`}
                                 </p>
+                                {pkg.tideGate && (
+                                  <p className="mt-2 flex items-start gap-2 rounded-lg bg-river-50 px-3 py-2 text-sm text-river">
+                                    <Waves className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                                    <span>
+                                      {pkg.tideGate.label}.
+                                      {avail?.highTides?.[date]?.length ? ` High tide that day: ${avail.highTides[date].map(fmt12).join(' and ')}.` : ''}
+                                    </span>
+                                  </p>
+                                )}
                                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="Start times">
                                   {times.map((t) => {
                                     const on = start === t;

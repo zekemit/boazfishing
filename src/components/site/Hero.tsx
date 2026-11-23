@@ -27,8 +27,8 @@ export function Hero({ photo, next }: { photo: PublicPhoto; next: { date: string
   return (
     <section id="top" className="relative isolate flex min-h-[100svh] overflow-hidden bg-river-900 text-white">
       {/* Phones: the photo owns the top of the screen and fades into the green, so faces stay clear of the headline.
-          Tablet and up: full-bleed photo with the headline over the water on the left. */}
-      <div className="absolute inset-x-0 top-0 -z-10 h-[62svh] md:inset-0 md:h-auto">
+          Tablet: full-bleed photo with the headline over the water on the left. Desktop: the photo sits on the right and fades into the green, so the face is never behind the headline. */}
+      <div className="absolute inset-x-0 top-0 -z-10 h-[62svh] md:inset-0 md:h-auto lg:left-[34%]">
         <Photo
           src={photo.src}
           alt={photo.alt}
@@ -37,7 +37,7 @@ export function Hero({ photo, next }: { photo: PublicPhoto; next: { date: string
           priority
           fallback={<div className="h-full w-full bg-gradient-to-br from-river-600 via-river-800 to-river-950" />}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-river-900 via-river-900/20 to-river-950/30 md:bg-gradient-to-r md:from-river-950/92 md:via-river-950/55 md:to-river-950/0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-river-900 via-river-900/20 to-river-950/30 md:bg-gradient-to-r md:from-river-950/92 md:via-river-950/55 md:to-river-950/0 lg:from-river-900 lg:via-river-900/25 lg:to-transparent" />
       </div>
 
       <div className="container-x relative flex flex-col pb-10 pt-[46svh] md:justify-center md:pb-24 md:pt-28">

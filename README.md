@@ -79,7 +79,7 @@ If you can't make a Google app password (2-Step Verification off, no phone handy
 ## How booking works
 
 - Boaz marks **open windows** (e.g. 7:00 to 11:00 AM). Guests don't book windows, they book **lessons carved out of them**: every 30 minutes inside a window where the whole lesson fits.
-  A 4 hour Summer Angler fits a 7 to 11 block exactly. A 2.5 hour Sunset Session fits 5:00 to 7:30 PM. Sunset Sessions only start at 4:00 PM or later.
+  First Cast (45 min, $100) can start at any 30 minute step. **Summer Angler (2 hours, $150) and Sunset Session (45 min, $100) are tide-timed:** they may only START 1 to 2 hours before a high tide (NOAA predictions for Charleston Harbor, station 8665530). Sunset Sessions also never start before 4:00 PM. So inside an open block, only the tide-matching start times are offered, and the booking page shows that day's high tide. Change the rule in `TIDE_GATE` in `src/lib/packages.ts`. If NOAA can't be reached, those two lessons show no times (and refuse bookings) instead of guessing; First Cast is unaffected.
 - The public calendar highlights only dates with at least one bookable start time. Blocked, booked and past times never appear.
 - Booking = one locked transaction: re-check availability, then insert. Ten simultaneous requests for one slot produce exactly one success and nine "that time was just taken" responses.
 - New bookings are **Needs approval** and hold the slot immediately. Boaz can Approve, Mark completed or Cancel. **Cancelling frees the time** on the public calendar at once. Restoring a cancelled booking fails if someone else took the time.

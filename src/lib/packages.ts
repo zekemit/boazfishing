@@ -13,11 +13,16 @@ export interface LessonPackage {
   maxAnglers: number;
   /** Earliest start time (HH:mm) this lesson can begin, e.g. sunset sessions only run late afternoon onward */
   earliestStart?: string;
+  /** Tide gate: a lesson may only START between minAhead and maxAhead minutes before a high tide. */
+  tideGate?: { minAhead: number; maxAhead: number; label: string };
   includes: string[];
   highlight?: string;
   /** The stages of a lesson that moves between places, shown as a progression on the card. */
   path?: string[];
 }
+
+/** Boaz fishes these two lessons on the push of the incoming tide: start 1 to 2 hours before high tide. */
+const TIDE_GATE = { minAhead: 60, maxAhead: 120, label: 'Starts 1 to 2 hours before high tide' };
 
 export const PACKAGES: LessonPackage[] = [
   {
@@ -47,11 +52,12 @@ export const PACKAGES: LessonPackage[] = [
     durationMin: 120,
     durationLabel: '2 hours',
     tagline: 'Leave with a system, not just a story.',
-    basePrice: 120,
+    basePrice: 150,
     includedAnglers: 2,
     extraAnglerPrice: 0,
     maxAnglers: 2,
     highlight: 'Best for bigger fish',
+    tideGate: TIDE_GATE,
     includes: [
       'Choosing between cut and live bait for the fish you want',
       'Structure fishing: points, drop-offs, docks and weed edges',
@@ -71,6 +77,7 @@ export const PACKAGES: LessonPackage[] = [
     extraAnglerPrice: 0,
     maxAnglers: 2,
     earliestStart: '16:00',
+    tideGate: TIDE_GATE,
     includes: [
       'Fishing the evening bite, when the fish move in to feed',
       'Live and cut bait setups that work at dusk',

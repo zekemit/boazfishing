@@ -10,6 +10,9 @@ export const LEAD_MIN = 180;
 /** How far ahead guests can book. */
 export const HORIZON_DAYS = 540;
 
+/** date -> high tide times in minutes after that date's midnight. */
+export type HighTides = Map<string, number[]>;
+
 export const isActive = (b: Booking) => b.status !== 'cancelled';
 export const overlaps = (aStart: number, aEnd: number, bStart: number, bEnd: number) => aStart < bEnd && bStart < aEnd;
 
@@ -33,8 +36,12 @@ export function startsFor(
   windows: AvailabilityWindow[],
   booked: Booking[],
   now: Now,
+  /** High tide times as minutes after midnight on `date` (neighbouring days may be negative or above 1440). */
+  highs?: number[],
 ): string[] {
   if (date < now.date) return [];
+  // A tide-gated lesson needs known tide times; with none, nothing is offered rather than a wrong time.
+  if (pkg.tideGate && !highs?.length) return [];
   const taken = booked.map((b) => [toMin(b.start), toMin(b.end)] as const);
   const dur = pkg.durationMin;
   const out = new Set<number>();
@@ -43,6 +50,7 @@ export function startsFor(
     for (let s = toMin(w.start); s + dur <= toMin(w.end); s += GRID_MIN) {
       if (pkg.earliestStart && s < toMin(pkg.earliestStart)) continue;
       if (date === now.date && s < now.minutes + LEAD_MIN) continue;
+      if (pkg.tideGate && !highs!.some((h) => h - s >= pkg.tideGate!.minAhead && h - s <= pkg.tideGate!.maxAhead)) continue;
       if (taken.some(([bs, be]) => overlaps(s, s + dur, bs, be))) continue;
       out.add(s);
     }
@@ -51,13 +59,13 @@ export function startsFor(
 }
 
 /** Everything bookable for a package, keyed by date, plus the soonest opening. */
-export function bookableDays(db: DB, pkg: LessonPackage, now: Now) {
+export function bookableDays(db: DB, pkg: LessonPackage, now: Now, tides?: HighTides) {
   const limit = addDays(now.date, HORIZON_DAYS);
   const windows = groupByDate(db.windows.filter((w) => w.status === 'open' && w.date >= now.date && w.date <= limit));
   const booked = groupByDate(db.bookings.filter((b) => isActive(b) && b.date >= now.date));
   const days: Record<string, string[]> = {};
   for (const [date, ws] of windows) {
-    const starts = startsFor(pkg, date, ws, booked.get(date) ?? [], now);
+    const starts = startsFor(pkg, date, ws, booked.get(date) ?? [], now, tides?.get(date));
     if (starts.length) days[date] = starts;
   }
   const first = Object.keys(days).sort()[0];
@@ -65,13 +73,14 @@ export function bookableDays(db: DB, pkg: LessonPackage, now: Now) {
 }
 
 /** The authoritative check used inside the booking transaction. */
-export function isBookable(db: DB, pkg: LessonPackage, date: string, start: string, now: Now): boolean {
+export function isBookable(db: DB, pkg: LessonPackage, date: string, start: string, now: Now, tides?: HighTides): boolean {
   return startsFor(
     pkg,
     date,
     db.windows.filter((w) => w.date === date),
     db.bookings.filter((b) => b.date === date && isActive(b)),
     now,
+    tides?.get(date),
   ).includes(start);
 }
 
