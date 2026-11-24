@@ -19,6 +19,9 @@ export function WhereWeMeet() {
             <p className="prose-serif mt-2 text-lg text-white/85">
               {meetingWhere()}. Come to the pavilion and look for Boaz. He confirms by text or email the day before, with a weather check.
             </p>
+            <p className="mt-3 text-sm text-white/70">
+              Booking First Cast? It starts with backyard training, so your meeting address is on your booking confirmation.
+            </p>
           </div>
           <a href={map} target="_blank" rel="noopener noreferrer" className="btn-primary justify-self-start md:justify-self-end">
             <Navigation className="h-5 w-5" aria-hidden /> Open in Maps

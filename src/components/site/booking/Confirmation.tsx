@@ -5,9 +5,9 @@ import { CalendarPlus, Check, MessageSquareText } from 'lucide-react';
 import { fmtDateLong, fmtRange } from '@/lib/time';
 import { EXPERIENCE_LABELS, type Booking } from '@/lib/types';
 import { formatPrice, getPackage } from '@/lib/packages';
-import { MEETING, meetingFull, meetingMapUrl, meetingWhere } from '@/content/site';
+import type { MeetingInfo } from '@/content/site';
 
-function buildIcs(b: Booking, lessonName: string): string {
+function buildIcs(b: Booking, lessonName: string, meet: MeetingInfo): string {
   const dt = (date: string, time: string) => `${date.replace(/-/g, '')}T${time.replace(':', '')}00`;
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   return [
@@ -21,20 +21,21 @@ function buildIcs(b: Booking, lessonName: string): string {
     `DTSTART:${dt(b.date, b.start)}`,
     `DTEND:${dt(b.date, b.end)}`,
     `SUMMARY:${lessonName} with Boaz Fishing Co.`,
-    `LOCATION:${meetingFull().replace(/,/g, '\\,')}`,
-    `DESCRIPTION:Confirmation ${b.code}. ${b.anglers} angler${b.anglers === 1 ? '' : 's'}. Meet ${meetingFull().replace(/,/g, '\\,')}. Boaz will confirm by text or email. Pay in person.`,
+    `LOCATION:${meet.full.replace(/,/g, '\\,')}`,
+    `DESCRIPTION:Confirmation ${b.code}. ${b.anglers} angler${b.anglers === 1 ? '' : 's'}. Meet ${meet.lower.replace(/,/g, '\\,')}. Boaz will confirm by text or email. Pay in person.`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
 }
 
-export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booking; cancelUrl?: string | null; onAnother: () => void }) {
+export function Confirmation({ booking, cancelUrl, meeting, onAnother }: { booking: Booking; cancelUrl?: string | null; meeting: MeetingInfo | null; onAnother: () => void }) {
   const reduce = useReducedMotion();
+  const meet: MeetingInfo = meeting ?? { full: 'Boaz will text you the meeting spot', lower: 'where Boaz tells you', mapUrl: '', note: null, short: '' };
   const pkg = getPackage(booking.packageId);
   const firstName = booking.name.trim().split(/\s+/)[0];
 
   const downloadIcs = () => {
-    const blob = new Blob([buildIcs(booking, pkg?.name ?? 'Fishing lesson')], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([buildIcs(booking, pkg?.name ?? 'Fishing lesson', meet)], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -51,7 +52,7 @@ export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booki
     ['Date', fmtDateLong(booking.date)],
     ['Time', fmtRange(booking.start, booking.end)],
     ['Anglers', `${booking.anglers}, ${EXPERIENCE_LABELS[booking.experience].toLowerCase()}`],
-    ['Where to meet', meetingFull()],
+    ['Where to meet', meet.full],
     ['Due at your lesson', formatPrice(booking.totalPrice)],
   ];
 
@@ -72,7 +73,7 @@ export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booki
         <div>
           <h3 className="display-md text-3xl sm:text-4xl">You’re on the water, {firstName}.</h3>
           <p className="prose-serif mt-2 text-lg text-ink-soft">
-            Your time is locked in. Meet {MEETING.spot.toLowerCase()}. {meetingWhere()}. Boaz will text or email you to confirm.
+            Your time is locked in. Meet {meet.lower}. Boaz will text or email you to confirm.
           </p>
         </div>
       </div>
@@ -95,7 +96,7 @@ export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booki
             {booking.packageId === 'first-cast' && (
               <li>Your First Cast lesson starts in a relaxed backyard setup, then moves to the pond once your casting is sharp.</li>
             )}
-            <li>Meet {MEETING.spot.toLowerCase()}. {meetingWhere()}. Boaz will confirm and send a weather check the day before. <a href={meetingMapUrl()} target="_blank" rel="noopener noreferrer" className="font-semibold text-river underline underline-offset-4">Open in Maps</a></li>
+            <li>Meet {meet.lower}. {meet.note ? `${meet.note} ` : ''}Boaz will confirm and send a weather check the day before.{meet.mapUrl && <> <a href={meet.mapUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-river underline underline-offset-4">Open in Maps</a></>}</li>
             <li>Bring sunscreen, water and a hat. Everything else is provided.</li>
           </ul>
         </div>

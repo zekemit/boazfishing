@@ -62,8 +62,17 @@ export function Summary({ pkg, date, start, anglers, showAnglers }: SummaryProps
           <li className="flex gap-3">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-river" aria-hidden />
             <span>
-              <span className="block font-semibold">{MEETING.spot}</span>
-              <span className="text-sm text-ink-mute">{meetingWhere()}</span>
+              {pkg.id === 'first-cast' ? (
+                <>
+                  <span className="block font-semibold">Backyard start</span>
+                  <span className="text-sm text-ink-mute">Your meeting address appears when you book</span>
+                </>
+              ) : (
+                <>
+                  <span className="block font-semibold">{MEETING.spot}</span>
+                  <span className="text-sm text-ink-mute">{meetingWhere()}</span>
+                </>
+              )}
             </span>
           </li>
           {showAnglers && (

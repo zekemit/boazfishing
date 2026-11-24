@@ -25,6 +25,19 @@ export const meetingFull = (): string => [`${MEETING.spot} at ${MEETING.road}`, 
 export const meetingWhere = (): string => [cap(`at ${MEETING.road}`), MEETING.area, MEETING.address].filter(Boolean).join(', ');
 export const meetingMapUrl = (): string => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MEETING.address ? `${MEETING.address} ${MEETING.area}` : MEETING.mapQuery)}`;
 
+/** What a guest is told about where to meet. See src/server/meeting.ts for the per-lesson (private) version. */
+export interface MeetingInfo {
+  /** Where to meet, e.g. "Out front of the house" */
+  full: string;
+  /** Same, starting lower case, for the middle of a sentence. */
+  lower: string;
+  mapUrl: string;
+  /** Extra line shown with it, if any. */
+  note: string | null;
+  /** One short phrase for tight spaces. */
+  short: string;
+}
+
 export const NAV = [
   { href: '#why', label: 'Why Boaz' },
   { href: '#lessons', label: 'Lessons' },
@@ -128,7 +141,7 @@ export const FAQS = [
   },
   {
     q: 'Where do lessons meet?',
-    a: 'Under the pavilion near the dock at the end of Red Tide Road, in the Oyster Point neighborhood. Come to the pavilion and look for Boaz. He will text or email you to confirm the day before, along with a weather check.',
+    a: 'Summer Angler and Sunset Session meet under the pavilion near the dock at the end of Red Tide Road, in the Oyster Point neighborhood. First Cast starts with backyard training, so the exact meeting address for your beginner lesson appears on your booking confirmation and in your emails. Boaz will text or email you the day before, along with a weather check.',
   },
   {
     q: 'What should we bring?',

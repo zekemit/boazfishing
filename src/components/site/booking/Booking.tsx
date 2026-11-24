@@ -9,6 +9,7 @@ import { PACKAGES, formatPrice, getPackage } from '@/lib/packages';
 import { notifyChange } from '@/lib/sync';
 import { addMonths, fmt12, fmtDateLong, fmtDateShort, fmtMonth, fromMin, monthOf, toMin } from '@/lib/time';
 import type { Booking as BookingType, PackageId, PublicAvailability } from '@/lib/types';
+import type { MeetingInfo } from '@/content/site';
 import { useRemote } from '@/hooks/useRemote';
 import { useBooking } from '../BookingContext';
 import { Calendar } from './Calendar';
@@ -39,6 +40,7 @@ export function Booking() {
   const [submitting, setSubmitting] = useState(false);
   const [booking, setBooking] = useState<BookingType | null>(null);
   const [cancelUrl, setCancelUrl] = useState<string | null>(null);
+  const [meeting, setMeeting] = useState<MeetingInfo | null>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const pendingDate = useRef<string | null>(null);
@@ -125,7 +127,7 @@ export function Booking() {
     }
     setSubmitting(true);
     try {
-      const res = await api<{ booking: BookingType; cancelUrl?: string }>('/api/bookings', {
+      const res = await api<{ booking: BookingType; cancelUrl?: string; meeting: MeetingInfo }>('/api/bookings', {
         method: 'POST',
         json: {
           packageId: pkg.id,
@@ -142,6 +144,7 @@ export function Booking() {
       });
       setBooking(res.booking);
       setCancelUrl(res.cancelUrl ?? null);
+      setMeeting(res.meeting);
       setStep(4);
       notifyChange();
     } catch (e) {
@@ -453,7 +456,7 @@ export function Booking() {
                     />
                   )}
 
-                  {step === 4 && booking && <Confirmation booking={booking} cancelUrl={cancelUrl} onAnother={bookAnother} />}
+                  {step === 4 && booking && <Confirmation booking={booking} cancelUrl={cancelUrl} meeting={meeting} onAnother={bookAnother} />}
                 </motion.div>
               </AnimatePresence>
 

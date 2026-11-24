@@ -1,6 +1,7 @@
 import type { Booking } from '@/lib/types';
 import { getPackage } from '@/lib/packages';
-import { BEGINNER_PATH, meetingFull, meetingMapUrl } from '@/content/site';
+import { BEGINNER_PATH } from '@/content/site';
+import { meetingFor } from '../meeting';
 import { fmt12, fmtDateLong, fmtDateShort, fmtRange } from '@/lib/time';
 import { boazEmail, boazPhone, prettyPhone, siteUrl } from './config';
 
@@ -49,7 +50,7 @@ function details(b: Booking): [string, string][] {
   return [
     ['Lesson', `${pkg?.name ?? ''} (${pkg?.durationLabel ?? ''})`],
     ['When', `${fmtDateLong(b.date)}, ${fmtRange(b.start, b.end)}`],
-    ['Where to meet', meetingFull()],
+    ['Where to meet', meetingFor(b.packageId).full],
     ['Anglers', String(b.anglers)],
     ['Due in person', `$${b.totalPrice}`],
     ['Confirmation code', b.code],
@@ -77,7 +78,7 @@ export function studentConfirmation(b: Booking, cancelUrl?: string): Message {
   const text = [
     `Hi ${first},`,
     '',
-    `You're on the schedule! Meet ${meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1)}. Boaz will text or email you to confirm.`,
+    `You're on the schedule! Meet ${meetingFor(b.packageId).lower}. Boaz will text or email you to confirm.`,
     '',
     ...details(b).map(([k, v]) => `${k}: ${v}`),
     '',
@@ -93,7 +94,7 @@ export function studentConfirmation(b: Booking, cancelUrl?: string): Message {
   ].join('\n');
   const html = shell(
     'Your lesson is booked',
-    `<p style="margin-top:0">Hi ${esc(first)},</p><p>You're on the schedule! Meet <strong>${esc(meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1))}</strong>. Boaz will text or email you to confirm.</p>
+    `<p style="margin-top:0">Hi ${esc(first)},</p><p>You're on the schedule! Meet <strong>${esc(meetingFor(b.packageId).lower)}</strong>. Boaz will text or email you to confirm.</p>
 <table style="border-collapse:collapse;margin:8px 0">${details(b).map(([k, v]) => row(k, v)).join('')}</table>
 ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
@@ -146,7 +147,7 @@ export function boazAlert(b: Booking): { title: string; text: string } {
 }
 
 export function boazAgenda(date: string, lessons: Booking[]): { title: string; text: string } {
-  const lines = lessons.map((b) => `${fmt12(b.start)} ${b.name}, ${b.phone}. ${getPackage(b.packageId)?.name}, ${b.anglers} angler${b.anglers === 1 ? '' : 's'}${b.status === 'pending' ? ' (not approved yet)' : ''}`);
+  const lines = lessons.map((b) => `${fmt12(b.start)} ${b.name}, ${b.phone}. ${getPackage(b.packageId)?.name}, ${b.anglers} angler${b.anglers === 1 ? '' : 's'}${b.status === 'pending' ? ' (not approved yet)' : ''}. Meet: ${meetingFor(b.packageId).short}`);
   return {
     title: `Today: ${lessons.length} lesson${lessons.length === 1 ? '' : 's'}`,
     text: `${fmtDateShort(date)}\n${lines.join('\n')}`,
@@ -171,7 +172,7 @@ export function studentApproved(b: Booking, cancelUrl?: string): Message {
     ...BRING.map((x) => `- ${x}`),
     'Rods, reels and bait are all provided.',
     '',
-    `Meet ${meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1)}. Map: ${meetingMapUrl()}\nNeed to change plans? Text Boaz at least 24 hours ahead.`,
+    `Meet ${meetingFor(b.packageId).lower}. Map: ${meetingFor(b.packageId).mapUrl}\nNeed to change plans? Text Boaz at least 24 hours ahead.`,
     ...(cancelBlock(cancelUrl).text ? [cancelBlock(cancelUrl).text] : []),
     '',
     c.text,
@@ -183,7 +184,7 @@ export function studentApproved(b: Booking, cancelUrl?: string): Message {
 ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
 <p style="margin:6px 0 0">Rods, reels and bait are all provided.</p>
-<p style="color:#46534D">Meet <strong>${esc(meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1))}</strong>. <a href="${meetingMapUrl()}" style="color:#B45309;font-weight:700">Open in Maps</a> Need to change plans? Text Boaz at least 24 hours ahead.</p>
+<p style="color:#46534D">Meet <strong>${esc(meetingFor(b.packageId).lower)}</strong>. <a href="${meetingFor(b.packageId).mapUrl}" style="color:#B45309;font-weight:700">Open in Maps</a> Need to change plans? Text Boaz at least 24 hours ahead.</p>
 ${cancelBlock(cancelUrl).html}
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
   );

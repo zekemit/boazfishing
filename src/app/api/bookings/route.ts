@@ -5,6 +5,7 @@ import { fromMin, toMin } from '@/lib/time';
 import { mutate, readDb } from '@/server/db';
 import { businessNow, businessTz } from '@/server/clock';
 import { cancelPath } from '@/server/cancel';
+import { meetingFor } from '@/server/meeting';
 import { notifyNewBooking, notifyStatusChange } from '@/server/notify/service';
 import { bookingConflicts, isBookable } from '@/server/availability';
 import { getHighTides } from '@/server/tides';
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
     });
     // Email the student and ping Boaz's phone after the response is sent. Can never fail the booking.
     after(() => notifyNewBooking(booking));
-    return json({ booking, cancelUrl: await cancelPath(booking) }, 201);
+    return json({ booking, cancelUrl: await cancelPath(booking), meeting: meetingFor(booking.packageId) }, 201);
   });
 }
 
