@@ -61,7 +61,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <button type="button" onClick={scrollToBook} className="btn-primary btn-sm hidden sm:inline-flex">
-            Book a lesson
+            Book now
           </button>
           <button
             type="button"
@@ -106,7 +106,7 @@ export function Header() {
                   scrollToBook();
                 }}
               >
-                Book a lesson
+                Book now
               </button>
             </div>
           </motion.nav>

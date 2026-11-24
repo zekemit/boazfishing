@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { CalendarPlus, Check, CheckCheck, ChevronDown, Download, Mail, MessageSquare, NotebookPen, Phone, RotateCcw, Users, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { formatPrice, getPackage } from '@/lib/packages';
+import { formatPrice, getPackage, sessionLabel } from '@/lib/packages';
 import { diffDays, fmtDateLong, fmtRange } from '@/lib/time';
 import { EXPERIENCE_LABELS, PRACTICE_SKILLS, PROGRESS_TAGS, type Booking, type BookingStatus } from '@/lib/types';
 import type { useBookingActions } from './useBookingActions';
@@ -35,7 +35,7 @@ function googleUrl(b: Booking, tz: string): string {
   const pkg = getPackage(b.packageId);
   const q = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `${pkg?.name ?? 'Lesson'}: ${b.name}`,
+    text: `${sessionLabel(b.packageId, false)}: ${b.name}`,
     dates: `${d}T${t(b.start)}/${d}T${t(b.end)}`,
     ctz: tz,
     details: [`Phone: ${b.phone}`, `Email: ${b.email}`, b.notes && `Notes: ${b.notes}`, `Code ${b.code}`].filter(Boolean).join('\n'),
@@ -71,7 +71,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
     .filter((x) => x.email.toLowerCase() === booking.email.toLowerCase() && x.status !== 'cancelled')
     .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
   const idx = mine.findIndex((x) => x.id === booking.id);
-  const lessonNo = idx + 1;
+  const returning = mine.some((x) => x.code !== booking.code && (x.date + x.start) < (booking.date + booking.start));
   const previous = idx > 0 ? mine[idx - 1] : null;
 
   const dirty =
@@ -105,7 +105,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
           <div className="flex flex-wrap items-center gap-2">
             <span className={cn('rounded-full px-2.5 py-1 text-xs font-bold', STATUS_STYLE[booking.status])}>{STATUS_LABEL[booking.status]}</span>
             {tag && <span className="rounded-full bg-river px-2.5 py-1 text-xs font-bold text-white">{tag}</span>}
-            {lessonNo > 1 && <span className="rounded-full bg-sunset px-2.5 py-1 text-xs font-bold text-river-950">Returning, lesson {lessonNo}</span>}
+            {returning && <span className="rounded-full bg-sunset px-2.5 py-1 text-xs font-bold text-river-950">Returning family</span>}
             {booking.cancelledBy === 'student' && booking.status === 'cancelled' && <span className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white">Cancelled by student</span>}
             {booking.sample && <span className="rounded-full border border-sand-400 px-2.5 py-1 text-xs font-semibold text-ink-mute">Sample</span>}
             <span className="text-xs font-semibold tracking-wide text-ink-mute">{booking.code}</span>
@@ -114,9 +114,9 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
           <p className="font-semibold text-ink-soft">{fmtRange(booking.start, booking.end)}</p>
         </div>
         <div className="sm:text-right">
-          <p className="display-md text-xl">{pkg?.name ?? booking.packageId}</p>
-          <p className="text-sm text-ink-mute">{pkg?.durationLabel}</p>
-          <p className="mt-1 font-bold">{formatPrice(booking.totalPrice)} due in person</p>
+          <p className="display-md text-xl">{sessionLabel(booking.packageId, false)}</p>
+          <p className="text-sm text-ink-mute">{pkg?.title}, {pkg?.durationLabel}</p>
+          <p className="mt-1 font-bold">{booking.totalPrice > 0 ? `${formatPrice(booking.totalPrice)} for all 3, due in person` : 'Included in the program'}</p>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
         <div>
           <p className="text-lg font-bold">{booking.name}</p>
           <p className="mt-1 flex items-center gap-2 text-ink-soft">
-            <Users className="h-4 w-4" aria-hidden /> {booking.anglers} {booking.anglers === 1 ? 'angler' : 'anglers'}, {EXPERIENCE_LABELS[booking.experience].toLowerCase()}
+            <Users className="h-4 w-4" aria-hidden /> 1 learner, {EXPERIENCE_LABELS[booking.experience].toLowerCase()}
           </p>
           <a href={`mailto:${booking.email}`} className="mt-1 inline-flex items-center gap-2 break-all text-river hover:underline">
             <Mail className="h-4 w-4 shrink-0" aria-hidden /> {booking.email}
@@ -132,7 +132,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
           <p className="mt-0.5 text-sm text-ink-mute">{booking.phone}</p>
         </div>
         <div>
-          <p className="text-sm font-semibold text-ink-mute">Notes from the student</p>
+          <p className="text-sm font-semibold text-ink-mute">Notes from the family</p>
           <p className="prose-serif mt-1 text-ink-soft">{booking.notes || <span className="text-ink-mute">No notes.</span>}</p>
         </div>
       </div>
@@ -178,7 +178,7 @@ export function BookingCard({ booking, all, today, tz, actions }: Props) {
         <div className="mt-4 rounded-xl bg-sand-100 p-4" data-testid="notes-drawer">
           {previous && (
             <p className="mb-3 rounded-lg bg-white px-3 py-2 text-sm text-ink-soft">
-              <strong className="text-ink">Last lesson ({fmtDateLong(previous.date)}):</strong> {previous.tags?.length ? previous.tags.join(', ') : 'no tags logged'}
+              <strong className="text-ink">Last session ({fmtDateLong(previous.date)}):</strong> {previous.tags?.length ? previous.tags.join(', ') : 'no tags logged'}
               {previous.lessonNotes ? `. ${previous.lessonNotes}` : ''}
             </p>
           )}

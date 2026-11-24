@@ -1,23 +1,19 @@
 'use client';
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import type { PackageId } from '@/lib/types';
 
 interface BookingContextValue {
-  packageId: PackageId | null;
   preferredDate: string | null;
-  /** Bumps every time a package card / hero shortcut is used, so the scheduler can react. */
+  /** Bumps every time a "book" button / hero shortcut is used, so the scheduler can react. */
   signal: number;
-  setPackageId: (id: PackageId | null) => void;
-  /** Pre-select a package (and optionally a date) in the scheduler, then scroll to it. */
-  selectPackage: (id: PackageId, date?: string) => void;
+  /** Open the scheduler at the first session (optionally with a date pre-selected), then scroll to it. */
+  startBooking: (date?: string) => void;
   scrollToBook: () => void;
 }
 
 const Ctx = createContext<BookingContextValue | null>(null);
 
 export function BookingProvider({ children }: { children: React.ReactNode }) {
-  const [packageId, setPackageId] = useState<PackageId | null>(null);
   const [preferredDate, setPreferredDate] = useState<string | null>(null);
   const [signal, setSignal] = useState(0);
 
@@ -25,9 +21,8 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     document.getElementById('book')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const selectPackage = useCallback(
-    (id: PackageId, date?: string) => {
-      setPackageId(id);
+  const startBooking = useCallback(
+    (date?: string) => {
       setPreferredDate(date ?? null);
       setSignal((n) => n + 1);
       scrollToBook();
@@ -35,10 +30,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     [scrollToBook],
   );
 
-  const value = useMemo(
-    () => ({ packageId, preferredDate, signal, setPackageId, selectPackage, scrollToBook }),
-    [packageId, preferredDate, signal, selectPackage, scrollToBook],
-  );
+  const value = useMemo(() => ({ preferredDate, signal, startBooking, scrollToBook }), [preferredDate, signal, startBooking, scrollToBook]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

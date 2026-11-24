@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, CalendarClock, ChevronLeft, ChevronRight, Plus, Sun, Sunrise, Sunset, Trash2, X } from 'lucide-react';
 import { api, errorMessage } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { getPackage } from '@/lib/packages';
+import { sessionLabel } from '@/lib/packages';
 import { notifyChange } from '@/lib/sync';
 import {
   WEEKDAY_SHORT,
@@ -379,7 +379,7 @@ function DayPanel({
                   {fmtRange(b.start, b.end)}, {b.name}
                 </span>
                 <span className="text-sm text-sunset-700">
-                  {getPackage(b.packageId)?.name}, {b.status === 'pending' ? 'needs approval' : b.status}
+                  {sessionLabel(b.packageId, false)}, {b.status === 'pending' ? 'needs approval' : b.status}
                 </span>
               </li>
             ))}

@@ -1,6 +1,7 @@
 // Shared types: safe to import from both server and client code.
 
-export const PACKAGE_IDS = ['first-cast', 'summer-angler', 'sunset-session'] as const;
+/** The three sessions of the Learn to Fish With Boaz program. Each booked session is one Booking with one of these ids. */
+export const PACKAGE_IDS = ['session-1', 'session-2', 'session-3'] as const;
 export type PackageId = (typeof PACKAGE_IDS)[number];
 
 export type WindowStatus = 'open' | 'blocked';
@@ -30,6 +31,10 @@ export interface Booking {
   id: string;
   code: string; // human friendly confirmation code, e.g. BFC-7K3Q9
   packageId: PackageId;
+  /** The three sessions of one program booking share a groupId and a code. */
+  groupId?: string;
+  /** 1, 2 or 3 */
+  sessionNo?: number;
   date: string;
   start: string;
   end: string;
@@ -55,16 +60,20 @@ export interface Booking {
 }
 
 /** Progress tags offered as one-tap chips (instructors can also add their own). */
-export const PROGRESS_TAGS = ['Backyard Casting', 'Knot Tying', 'Baiting & Hooks', 'Graduated to Pond', 'First Fish', 'Marsh Ready'] as const;
+export const PROGRESS_TAGS = ['Palmer Knot', 'Improved Clinch Knot', 'Spinner Rod Cast', 'Cast Net', 'Baiting & Hooks', 'First Fish', 'Safe Release'] as const;
 export const PRACTICE_SKILLS = [
-  'Casting mechanics',
-  'Accuracy',
-  'Knots',
-  'Baiting a hook',
-  'Setting the hook',
-  'Reeling in',
-  'Handling and release',
-  'Reading the water',
+  'Palmer knot',
+  'Improved clinch knot',
+  'Spinning rod basics',
+  'Casting a spinner rod',
+  'Throwing a cast net',
+  'Carolina rig',
+  'Double drop rig',
+  'Popping cork rig',
+  'Catching bait',
+  'Hooking and cutting bait',
+  'Removing hooks',
+  'Handling and safe release',
 ] as const;
 
 export type NotifyKind = 'student_confirmation' | 'student_approved' | 'student_cancelled' | 'boaz_cancelled' | 'student_reminder' | 'boaz_alert' | 'boaz_agenda' | 'test';
@@ -165,7 +174,7 @@ export interface SuggestPrefs {
   aheadDays: number;
   /** Count all-day calendar events (holidays, birthdays) as busy. */
   allDayBusy: boolean;
-  /** Also suggest First Cast-only blocks on wanted days that have no tide window. */
+  /** Also suggest Session 1 blocks (not tide-timed) in the free time around the tide windows. */
   flex: boolean;
 }
 

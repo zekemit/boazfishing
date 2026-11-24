@@ -12,7 +12,7 @@ const BADGE_ICONS = [Backpack, Users, Sunrise];
 
 export function Hero({ photo, next }: { photo: PublicPhoto; next: { date: string; start: string } | null }) {
   const reduce = useReducedMotion();
-  const { scrollToBook, selectPackage } = useBooking();
+  const { scrollToBook, startBooking } = useBooking();
 
   // One orchestrated entrance: the headline block rises in, in sequence. Nothing else on the page animates on load.
   const rise = (i: number) =>
@@ -54,7 +54,7 @@ export function Hero({ photo, next }: { photo: PublicPhoto; next: { date: string
 
         <motion.div {...rise(2)} className="mt-6 grid grid-cols-2 gap-3 sm:flex md:mt-7">
           <button type="button" className="btn-primary px-4 sm:px-8 sm:text-lg" onClick={scrollToBook}>
-            Book a lesson
+            Book now
           </button>
           <a href="#meet" className="btn-outline-light px-4 sm:px-8 sm:text-lg">
             Meet Boaz
@@ -87,7 +87,7 @@ export function Hero({ photo, next }: { photo: PublicPhoto; next: { date: string
             </div>
             <button
               type="button"
-              onClick={() => selectPackage('first-cast', next.date)}
+              onClick={() => startBooking(next.date)}
               className="shrink-0 rounded-lg bg-sunset px-3.5 py-2 text-sm font-semibold text-river-950 hover:bg-sunset-400"
             >
               Grab it

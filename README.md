@@ -1,6 +1,6 @@
 # Boaz Fishing Co.
 
-Summer fishing lesson site with a real booking engine and an instructor portal.
+Booking site for **Learn to Fish With Boaz**: one-on-one fishing lessons for kids ages 4 to 12, three 45 minute sessions for $100. Real booking engine and an instructor portal.
 Next.js 16 (App Router), TypeScript, Tailwind, Framer Motion. No API keys, no external database.
 
 ## Run it
@@ -42,12 +42,12 @@ Nothing here needs a key to run. With no keys set, every message is **simulated*
 | What | When | How it is sent |
 |---|---|---|
 | Student confirmation email (package, date and time, backyard-to-pond details, what to bring, Boaz's contact info, calendar invite) | The moment they book | SMTP, free with a Gmail app password |
-| Student approval email ("Boaz confirmed your lesson", with a calendar update) | When Boaz taps Approve | SMTP |
-| Student cancellation email (time is open again, how to rebook, and a calendar cancel that removes the lesson from their calendar) | When Boaz cancels a lesson. A checkbox on the cancel prompt lets him skip it | SMTP |
-| **Cancel my lesson link** in the confirmation, approval and reminder emails (opens `/cancel`, shows the lesson, asks "Are you sure?", then cancels, frees the time, emails the student and pings Boaz's phone) | Students can cancel online up to 24 hours before the lesson (`CANCEL_NOTICE_HOURS` in `src/server/cancel.ts`). Inside 24 hours the page tells them to text Boaz, who can still cancel from Admin. The link is signed, so it works without a login and can't be guessed | SMTP for the emails, ntfy for Boaz's alert |
-| Student reminder email | About a day before (any lesson within 30 hours that has not had one) | SMTP |
+| Student approval email ("Boaz confirmed your sessions", with a calendar update for all three) | When Boaz taps Approve on any session (approves the whole program) | SMTP |
+| Student cancellation email (times are open again, how to rebook, and a calendar cancel that removes them from their calendar) | When Boaz cancels a session. A checkbox on the cancel prompt lets him skip it | SMTP |
+| **Cancel my sessions link** in the confirmation, approval and reminder emails (opens `/cancel`, lists the sessions, asks "Are you sure?", then cancels every session that hasn't happened yet, frees the times, emails the family and pings Boaz's phone) | Families can cancel online up to 24 hours before their next session (`CANCEL_NOTICE_HOURS` in `src/server/cancel.ts`). Inside 24 hours the page tells them to text Boaz, who can still cancel from Admin. The link is signed, so it works without a login and can't be guessed | SMTP for the emails, ntfy for Boaz's alert |
+| Student reminder email, one per session | About a day before (any session within 30 hours that has not had one) | SMTP |
 | Booking alert to Boaz's phone (name, phone, package, time) | The moment someone books | ntfy push (free, no account). Optional: Twilio text, or any email address |
-| Morning agenda to Boaz | Once per lesson day, after 6 AM local | Same phone channels |
+| Morning agenda to Boaz | Once per session day, after 6 AM local | Same phone channels |
 
 `GET/POST /api/reminders` sends the scheduled ones. It is safe to call as often as you like: every reminder is claimed in a transaction before it goes out, so nothing is sent twice. It accepts the admin login, or `Authorization: Bearer $CRON_SECRET` (Vercel Cron does this by itself), or `?key=$CRON_SECRET` for any free pinger. `vercel.json` runs it daily at 11:00 UTC (7 AM Eastern in summer). Vercel's free plan only allows daily cron jobs, which is why reminders go out a day ahead rather than at an exact 24 hours.
 
@@ -65,10 +65,10 @@ Privacy note: ntfy alerts pass through ntfy.sh, and the long random topic name i
 
 ## Command Center (`/admin`)
 
-- **Command:** live marsh tide, summer KPIs (upcoming lessons, lessons taught, hours on the water, estimated summer revenue) and today's agenda.
+- **Command:** live marsh tide, summer KPIs (upcoming sessions, sessions taught, hours on the water, estimated summer revenue) and today's agenda.
 - **Tide:** NOAA Tides & Currents, no key. Default station is Charleston Harbor (8665530), the nearest NOAA gauge with live water level to the Oyster Point and Hamlin Creek marsh. It shows rising or falling, current height, next high and low, a 24-hour curve, and "Marsh Bite Window" bands (the middle half of each rising or falling tide, when the current is strongest). That is a rule of thumb, not a forecast. If NOAA is unreachable, a typical tide curve is shown and labeled simulated.
 - **Availability** shows each day's high and low tides, and tells you whether each time block catches moving water.
-- **Bookings:** filters for Today, This week, Pending, Upcoming, Completed, Cancelled. One-tap Call and Text buttons. A notes and skill-tracker drawer on each booking (progress tags, what was practiced, lesson notes) and a returning-student badge.
+- **Bookings:** filters for Today, This week, Pending, Upcoming, Completed, Cancelled. One-tap Call and Text buttons. A notes and skill-tracker drawer on each booking (progress tags, what was practiced, lesson notes) and a returning-family badge.
 - **Integrate Calendar:** a private `.ics` link (`/api/calendar/feed.ics?token=...`) for Apple Calendar, Google Calendar and Outlook, plus Add to Google Calendar and Download .ics on every booking. "Reset link" issues a new private link.
 - **Alerts:** channel status, Send test now, Run reminders now, and the full notification log.
 
@@ -78,8 +78,10 @@ If you can't make a Google app password (2-Step Verification off, no phone handy
 
 ## How booking works
 
-- Boaz marks **open windows** (e.g. 7:00 to 11:00 AM). Guests don't book windows, they book **lessons carved out of them**: every 30 minutes inside a window where the whole lesson fits.
-  First Cast (45 min, $100) can start at any 30 minute step. **Summer Angler (2 hours, $150) and Sunset Session (45 min, $100) are tide-timed:** they may only START 1 to 2 hours before a high tide (NOAA predictions for Charleston Harbor, station 8665530). Sunset Sessions also never start before 4:00 PM. So inside an open block, only the tide-matching start times are offered, and the booking page shows that day's high tide. Change the rule in `TIDE_GATE` in `src/lib/packages.ts`. If NOAA can't be reached, those two lessons show no times (and refuse bookings) instead of guessing; First Cast is unaffected.
+- Boaz marks **open windows** (e.g. 7:00 to 11:00 AM). Families don't book windows, they book **sessions carved out of them**: every 30 minutes inside a window where the whole 45 minute session fits.
+  **The program** (`src/lib/packages.ts`): Session 1 (knots, rod basics, casting) can start at any 30 minute step. **Sessions 2 and 3 are tide-timed:** they may only START 1 to 2 hours before a high tide (NOAA predictions for Charleston Harbor, station 8665530). The booking page shows that day's high tide. Change the rule in `TIDE_GATE`. If NOAA can't be reached, sessions 2 and 3 show no times (and refuse bookings) instead of guessing; session 1 is unaffected.
+  **Booking is all three at once:** a family picks a time for each session, each on a later day than the one before. All three are checked and saved in one locked transaction (all or none), as three bookings that share one confirmation code. The $100 is recorded on session 1. Approving any session approves the program; the family's cancel link cancels every session that hasn't happened.
+  **Where they meet** (`src/server/meeting.ts`, `MEETING` in `src/content/site.ts`): session 1 out front of the backyard address (private: only in server code, sent after booking); sessions 2 and 3 under the pavilion near the dock at the end of Red Tide Road.
 - The public calendar highlights only dates with at least one bookable start time. Blocked, booked and past times never appear.
 - Booking = one locked transaction: re-check availability, then insert. Ten simultaneous requests for one slot produce exactly one success and nine "that time was just taken" responses.
 - New bookings are **Needs approval** and hold the slot immediately. Boaz can Approve, Mark completed or Cancel. **Cancelling frees the time** on the public calendar at once. Restoring a cancelled booking fails if someone else took the time.
@@ -94,10 +96,10 @@ If you can't make a Google app password (2-Step Verification off, no phone handy
 
 ## Suggested availability (Admin > Availability, top of the page)
 
-One-tap suggestions for when to open your calendar. For each day you pick, it finds the high tides (NOAA), builds a window from 2 hours before to 1 hour after high tide (so Summer Angler, Sunset Session and First Cast all fit), trims it around your own calendar, skips anything already open or blocked, and shows exactly which lesson start times each window gives. **Add** opens it on the public booking calendar immediately; **Undo** takes it back; **Add all** adds everything listed.
+One-tap suggestions for when to open your calendar. For each day you pick, it finds the high tides (NOAA), builds a window that covers every tide-matching start (from 2 hours before high tide until the last session could start, about an hour before) (so sessions 1, 2 and 3 can all start in it), trims it around your own calendar, skips anything already open or blocked, and shows exactly which session start times each window gives. **Add** opens it on the public booking calendar immediately; **Undo** takes it back; **Add all** adds everything listed.
 
 - **Connect your calendar** (optional): paste the calendar's secret iCal address (Google: Settings > your calendar > Integrate calendar > Secret address in iCal format; Apple: Public Calendar link; Outlook: published ICS link) or upload an `.ics` file. Linked calendars refresh on their own every 30 minutes. Recurring events, time zones, cancelled events and "free" events are handled; lessons from this site's own calendar feed are ignored. Only busy times are used, and the address is never sent back to the browser.
-- **What I want:** days of the week, earliest/latest time, a buffer around events, how far ahead to look, whether all-day events block the day, and an option for extra First Cast-only blocks in the free time between tide windows.
+- **What I want:** days of the week, earliest/latest time, a buffer around events, how far ahead to look, whether all-day events block the day, and an option for extra Session 1 blocks (not tide-timed) in the free time between tide windows.
 - Code: `src/server/suggest.ts` (engine), `src/server/calendarImport.ts` (.ics reader), `src/app/api/suggestions`, `src/app/api/calendar/import`.
 
 ## Photos: drop-in file paths
@@ -117,7 +119,7 @@ Empty gallery slots are hidden on the site. After `npm run build`, files copied 
 | To change | Edit |
 |---|---|
 | Headline, bio, FAQ, reviews, value props | `src/content/site.ts` |
-| Lesson names, prices, durations, angler limits | `src/lib/packages.ts` |
+| Session outlines, program price, ages, what to bring | `src/lib/packages.ts` |
 | Colors, fonts | `tailwind.config.ts`, `src/app/layout.tsx` |
 | Seed calendar and sample bookings | `src/server/seed.ts` |
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { PACKAGES, formatPrice } from '@/lib/packages';
+import { PROGRAM, formatPrice } from '@/lib/packages';
 import { useBooking } from './BookingContext';
 
 /** On phones, keeps the main action one tap away once the hero scrolls out and until the scheduler is on screen. */
@@ -28,8 +28,6 @@ export function MobileBookBar() {
     return () => io.disconnect();
   }, []);
 
-  const from = Math.min(...PACKAGES.map((p) => p.basePrice));
-
   return (
     <AnimatePresence>
       {show && (
@@ -42,11 +40,11 @@ export function MobileBookBar() {
         >
           <div className="flex items-center justify-between gap-4">
             <p className="leading-tight">
-              <span className="block font-semibold">Lessons from {formatPrice(from)}</span>
-              <span className="text-sm text-white/65">All gear provided</span>
+              <span className="block font-semibold">{formatPrice(PROGRAM.price)} for all {PROGRAM.sessionCount} sessions</span>
+              <span className="text-sm text-white/65">1 on 1, ages 4 to 12</span>
             </p>
             <button type="button" onClick={scrollToBook} className="btn-primary shrink-0 px-6">
-              Book a lesson
+              Book sessions
             </button>
           </div>
         </motion.div>

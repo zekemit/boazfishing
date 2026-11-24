@@ -1,16 +1,15 @@
 'use client';
 
-import { Loader2, Minus, Plus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { EXPERIENCE_LABELS, EXPERIENCE_LEVELS, type Experience } from '@/lib/types';
-import { formatPrice, priceFor, type LessonPackage } from '@/lib/packages';
+import { PROGRAM, formatPrice } from '@/lib/packages';
 
 export interface FormState {
   name: string;
   email: string;
   phone: string;
   experience: Experience | '';
-  anglers: number;
   notes: string;
   company: string; // honeypot
 }
@@ -20,26 +19,23 @@ export const EMPTY_FORM: FormState = {
   email: '',
   phone: '',
   experience: '',
-  anglers: 2,
   notes: '',
   company: '',
 };
 
-export function validateForm(f: FormState, maxAnglers: number): Record<string, string> {
+export function validateForm(f: FormState): Record<string, string> {
   const e: Record<string, string> = {};
-  if (f.name.trim().length < 2) e.name = 'Enter your full name.';
+  if (f.name.trim().length < 2) e.name = 'Enter the parent or guardian name.';
   if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) e.email = 'Enter a valid email address.';
   if (f.phone.replace(/\D/g, '').length < 7 || !/^[+()\-.\s\d]+$/.test(f.phone.trim())) {
     e.phone = 'Enter a phone number Boaz can text or call.';
   }
   if (!f.experience) e.experience = 'Pick an experience level.';
-  if (f.anglers < 1 || f.anglers > maxAnglers) e.anglers = `Choose between 1 and ${maxAnglers} anglers.`;
   if (f.notes.length > 800) e.notes = 'Keep notes under 800 characters.';
   return e;
 }
 
 interface Props {
-  pkg: LessonPackage;
   form: FormState;
   errors: Record<string, string>;
   formError: string | null;
@@ -58,8 +54,7 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
-export function DetailsForm({ pkg, form, errors, formError, submitting, onChange, onSubmit, onBack }: Props) {
-  const total = priceFor(pkg, form.anglers);
+export function DetailsForm({ form, errors, formError, submitting, onChange, onSubmit, onBack }: Props) {
   const inputProps = (key: keyof FormState & string) => ({
     id: `field-${key}`,
     'aria-invalid': errors[key] ? (true as const) : undefined,
@@ -78,14 +73,14 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="display-md text-2xl sm:text-3xl">Your details</h3>
         <button type="button" onClick={onBack} className="text-sm font-semibold text-river underline underline-offset-4">
-          Change date or time
+          Change dates or times
         </button>
       </div>
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="field-name" className="label">
-            Full name
+            Parent or guardian name
           </label>
           <input
             {...inputProps('name')}
@@ -130,7 +125,7 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
       </div>
 
       <fieldset className="mt-6">
-        <legend className="label">Fishing experience</legend>
+        <legend className="label">The learner&apos;s fishing experience</legend>
         <div className="grid gap-2 sm:grid-cols-3">
           {EXPERIENCE_LEVELS.map((level) => {
             const on = form.experience === level;
@@ -159,43 +154,6 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
       </fieldset>
 
       <div className="mt-6">
-        <span className="label" id="anglers-label">
-          Number of anglers
-        </span>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="inline-flex items-center rounded-lg border border-sand-300 bg-white" role="group" aria-labelledby="anglers-label">
-            <button
-              type="button"
-              aria-label="One fewer angler"
-              disabled={form.anglers <= 1}
-              onClick={() => onChange({ anglers: Math.max(1, form.anglers - 1) })}
-              className="flex h-12 w-12 items-center justify-center rounded-l-lg hover:bg-river-50 disabled:opacity-35"
-            >
-              <Minus className="h-5 w-5" />
-            </button>
-            <output aria-live="polite" className="min-w-[3rem] text-center text-lg font-bold tabular-nums">
-              {form.anglers}
-            </output>
-            <button
-              type="button"
-              aria-label="One more angler"
-              disabled={form.anglers >= pkg.maxAnglers}
-              onClick={() => onChange({ anglers: Math.min(pkg.maxAnglers, form.anglers + 1) })}
-              className="flex h-12 w-12 items-center justify-center rounded-r-lg hover:bg-river-50 disabled:opacity-35"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </div>
-          <p className="text-sm text-ink-soft">
-            {pkg.maxAnglers > pkg.includedAnglers
-              ? `${pkg.name} includes ${pkg.includedAnglers} anglers. Each extra is +${formatPrice(pkg.extraAnglerPrice)}, up to ${pkg.maxAnglers}.`
-              : `Lessons fit one or two anglers. The price is the same for either.`}
-          </p>
-        </div>
-        <FieldError id="err-anglers" message={errors.anglers} />
-      </div>
-
-      <div className="mt-6">
         <label htmlFor="field-notes" className="label">
           Anything Boaz should know? <span className="font-normal text-ink-mute">(optional)</span>
         </label>
@@ -205,7 +163,7 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
           maxLength={800}
           value={form.notes}
           onChange={(e) => onChange({ notes: e.target.value })}
-          placeholder="Ages of anglers, what you want to catch, accessibility needs, a birthday..."
+          placeholder="The learner's age, any nerves around water, what they hope to catch, a birthday..."
         />
         <FieldError id="err-notes" message={errors.notes} />
       </div>
@@ -234,13 +192,13 @@ export function DetailsForm({ pkg, form, errors, formError, submitting, onChange
         <button type="submit" disabled={submitting} className="btn-primary w-full px-8 text-lg sm:w-auto">
           {submitting ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Locking in your time...
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> Locking in your times...
             </>
           ) : (
-            <>Confirm booking, {formatPrice(total)}</>
+            <>Book all {PROGRAM.sessionCount} sessions, {formatPrice(PROGRAM.price)}</>
           )}
         </button>
-        <p className="text-sm text-ink-soft">No payment now. You pay Boaz in person.</p>
+        <p className="text-sm text-ink-soft">No payment now. {formatPrice(PROGRAM.price)} covers all {PROGRAM.sessionCount} sessions, paid to Boaz in person.</p>
       </div>
     </form>
   );

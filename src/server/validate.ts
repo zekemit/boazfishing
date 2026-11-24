@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BOOKING_STATUSES, EXPERIENCE_LEVELS, PACKAGE_IDS, PHOTO_SLOT_IDS } from '@/lib/types';
+import { BOOKING_STATUSES, EXPERIENCE_LEVELS, PHOTO_SLOT_IDS } from '@/lib/types';
 import { isValidDate, toMin } from '@/lib/time';
 
 export const dateStr = z.string().refine(isValidDate, 'Use a valid date.');
@@ -42,18 +42,18 @@ export const windowPatch = z
   })
   .refine((v) => v.status !== undefined || v.start !== undefined || v.end !== undefined, 'Nothing to change.');
 
+const sessionSlot = z.object({ date: dateStr, start: timeStr });
+
+/** A program booking: a date and start time for each of the three sessions, in order. */
 export const bookingInput = z.object({
-  packageId: z.enum(PACKAGE_IDS, { errorMap: () => ({ message: 'Choose a lesson.' }) }),
-  date: dateStr,
-  start: timeStr,
-  name: z.string().trim().min(2, 'Enter your full name.').max(80, 'That name is too long.'),
+  sessions: z.array(sessionSlot).length(3, 'Pick a date and time for all three sessions.'),
+  name: z.string().trim().min(2, 'Enter the parent or guardian name.').max(80, 'That name is too long.'),
   email: z.string().trim().toLowerCase().email('Enter a valid email address.').max(120),
   phone: z
     .string()
     .trim()
     .refine((v) => /^[+()\-.\s\d]{7,25}$/.test(v) && v.replace(/\D/g, '').length >= 7, 'Enter a phone number Boaz can text or call.'),
   experience: z.enum(EXPERIENCE_LEVELS, { errorMap: () => ({ message: 'Pick an experience level.' }) }),
-  anglers: z.coerce.number().int().min(1, 'At least one angler.').max(10),
   notes: z.string().trim().max(800, 'Keep notes under 800 characters.').default(''),
   company: z.string().max(0).optional(), // honeypot: real people never fill it in
 });

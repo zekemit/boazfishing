@@ -1,8 +1,8 @@
 import type { Booking } from '@/lib/types';
-import { getPackage } from '@/lib/packages';
+import { PROGRAM, getPackage, sessionLabel } from '@/lib/packages';
 import { fmtDateShort, fmtRange } from '@/lib/time';
-import { meetingFor } from './meeting';
 import { businessTz, localToUtc } from './clock';
+import { meetingFor } from './meeting';
 
 const stampUtc = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
@@ -22,21 +22,21 @@ function fold(line: string): string {
 }
 
 export function lessonTitle(b: Booking): string {
-  const pkg = getPackage(b.packageId);
-  return `${pkg?.name ?? 'Lesson'}: ${b.name}${b.anglers > 1 ? ` (${b.anglers})` : ''}`;
+  return `${sessionLabel(b.packageId, false)}: ${b.name}`;
 }
 
 export function lessonDescription(b: Booking, adminUrl?: string): string {
   const pkg = getPackage(b.packageId);
   const lines = [
-    `${pkg?.name ?? 'Lesson'}, ${b.anglers} angler${b.anglers === 1 ? '' : 's'}, $${b.totalPrice} due in person`,
-    `Student: ${b.name}`,
+    `${PROGRAM.name}, ${sessionLabel(b.packageId)}${b.sessionNo === 1 || !b.sessionNo ? `. Program $${PROGRAM.price} due in person` : ''}`,
+    `Booked by: ${b.name}`,
     `Phone: ${b.phone}`,
     `Email: ${b.email}`,
     `Status: ${b.status}`,
     `Code: ${b.code}`,
   ];
-  if (b.notes) lines.push(`Notes from student: ${b.notes}`);
+  if (pkg?.tideGate) lines.push(pkg.tideGate.label);
+  if (b.notes) lines.push(`Notes from family: ${b.notes}`);
   if (adminUrl) lines.push(`Manage: ${adminUrl}`);
   return lines.join('\n');
 }
@@ -61,7 +61,7 @@ function vevent(b: Booking, host: string, adminUrl?: string): string[] {
   ];
 }
 
-/** A full subscribable calendar of every lesson that is not cancelled. Cancelled lessons simply disappear on refresh. */
+/** A full subscribable calendar of every session that is not cancelled. Cancelled sessions simply disappear on refresh. */
 export function buildFeed(bookings: Booking[], host: string, adminUrl: string): string {
   const lines = [
     'BEGIN:VCALENDAR',
@@ -79,28 +79,34 @@ export function buildFeed(bookings: Booking[], host: string, adminUrl: string): 
   return lines.map(fold).join('\r\n') + '\r\n';
 }
 
-/** One booking as a downloadable .ics (also attached to the student's confirmation email). */
-export function buildSingle(b: Booking, host: string, opts: { forStudent?: boolean; sequence?: number; cancel?: boolean } = {}): string {
-  const pkg = getPackage(b.packageId);
-  const ev = opts.forStudent
-    ? [
-        'BEGIN:VEVENT',
-        `UID:${b.id}@${host}`,
-        `DTSTAMP:${stampUtc(new Date(b.updatedAt))}`,
-        // A higher SEQUENCE tells calendar apps this replaces (or, with CANCELLED, removes) the earlier invite.
-        `SEQUENCE:${opts.sequence ?? 0}`,
-        `DTSTART:${stampUtc(localToUtc(b.date, b.start))}`,
-        `DTEND:${stampUtc(localToUtc(b.date, b.end))}`,
-        `SUMMARY:${esc(`${opts.cancel ? 'Cancelled: ' : ''}${pkg?.name ?? 'Fishing lesson'} with Boaz Fishing Co.`)}`,
-        `LOCATION:${esc(meetingFor(b.packageId).full)}`,
-        `DESCRIPTION:${esc(opts.cancel ? `Confirmation ${b.code}. This lesson was cancelled.` : `Confirmation ${b.code}. Meet ${meetingFor(b.packageId).lower}. Pay in person.`)}`,
-        `STATUS:${opts.cancel ? 'CANCELLED' : (opts.sequence ?? 0) >= 1 ? 'CONFIRMED' : 'TENTATIVE'}`,
-        'END:VEVENT',
-      ]
-    : vevent(b, host);
-  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Boaz Fishing Co.//Lessons//EN', 'CALSCALE:GREGORIAN', `METHOD:${opts.cancel ? 'CANCEL' : 'PUBLISH'}`, ...ev, 'END:VCALENDAR']
-    .map(fold)
-    .join('\r\n') + '\r\n';
+/** One booking as a downloadable .ics for the instructor (Add to Google Calendar / Download .ics on a booking card). */
+export function buildSingle(b: Booking, host: string): string {
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Boaz Fishing Co.//Lessons//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', ...vevent(b, host), 'END:VCALENDAR'].map(fold).join('\r\n') + '\r\n';
+}
+
+/**
+ * The family's calendar invite: every session of the program as its own event. A higher SEQUENCE tells their
+ * calendar this replaces the earlier invite, and cancelled sessions carry STATUS:CANCELLED so they drop off.
+ */
+export function buildStudentCalendar(sessions: Booking[], host: string, opts: { sequence?: number; method?: 'PUBLISH' | 'CANCEL' } = {}): string {
+  const events = sessions.flatMap((b) => {
+    const cancelled = b.status === 'cancelled';
+    const meet = meetingFor(b.packageId);
+    return [
+      'BEGIN:VEVENT',
+      `UID:${b.id}@${host}`,
+      `DTSTAMP:${stampUtc(new Date(b.updatedAt))}`,
+      `SEQUENCE:${opts.sequence ?? 0}`,
+      `DTSTART:${stampUtc(localToUtc(b.date, b.start))}`,
+      `DTEND:${stampUtc(localToUtc(b.date, b.end))}`,
+      `SUMMARY:${esc(`${cancelled ? 'Cancelled: ' : ''}${sessionLabel(b.packageId, false)}: ${PROGRAM.name}`)}`,
+      `LOCATION:${esc(meet.full)}`,
+      `DESCRIPTION:${esc(cancelled ? `Confirmation ${b.code}. This session was cancelled.` : `Confirmation ${b.code}. ${sessionLabel(b.packageId)}. Meet ${meet.lower}. Bring a cast net and spinner rod, or Boaz can provide them.`)}`,
+      `STATUS:${cancelled ? 'CANCELLED' : b.status === 'pending' && (opts.sequence ?? 0) < 1 ? 'TENTATIVE' : 'CONFIRMED'}`,
+      'END:VEVENT',
+    ];
+  });
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Boaz Fishing Co.//Lessons//EN', 'CALSCALE:GREGORIAN', `METHOD:${opts.method ?? 'PUBLISH'}`, ...events, 'END:VCALENDAR'].map(fold).join('\r\n') + '\r\n';
 }
 
 export { fmtDateShort, fmtRange };

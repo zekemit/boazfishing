@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import type { AvailabilityWindow, Booking, DB, Experience, PackageId } from '@/lib/types';
 import { defaultPhotos } from '@/lib/photos';
-import { getPackage, priceFor } from '@/lib/packages';
+import { getPackage } from '@/lib/packages';
 import { addDays, fromMin, toMin, weekday } from '@/lib/time';
 import { businessNow } from './clock';
 
@@ -76,11 +76,13 @@ export function buildSeed(): DB {
       id: newId('b'),
       code: newCode(codes),
       packageId,
+      sessionNo: pkg.number,
       date,
       start,
       end: fromMin(toMin(start) + pkg.durationMin),
       ...guest,
-      totalPrice: priceFor(pkg, guest.anglers),
+      anglers: 1,
+      totalPrice: pkg.basePrice,
       status,
       createdAt: ago(createdAgoMs),
       updatedAt: nowIso,
@@ -95,37 +97,37 @@ export function buildSeed(): DB {
   const [w1, w2, w3, w4] = weekendWindows;
   const H = 3_600_000;
   if (w1) {
-    mk('first-cast', w1.date, w1.start, {
+    mk('session-1', w1.date, w1.start, {
       name: 'Jordan Ellis',
       email: 'jordan.ellis@example.com',
       phone: '(555) 010-0142',
       experience: 'first-time',
       anglers: 2,
-      notes: "Birthday outing for my son, turning 9. He's never held a rod before.",
+      notes: "My son is turning 9 and has never held a rod before.",
     }, 'pending', 2 * H);
   }
   if (w2) {
-    mk('summer-angler', w2.date, w2.start, {
+    mk('session-2', w2.date, w2.start, {
       name: 'Priya Raman',
       email: 'priya.r@example.com',
       phone: '(555) 010-0177',
       experience: 'some',
       anglers: 2,
-      notes: "We can cast but want to learn how to find and catch bigger fish.",
+      notes: 'My daughter is 11 and has fished a little from the dock.',
     }, 'confirmed', 26 * H);
   }
   if (w3) {
-    mk('first-cast', w3.date, fromMin(toMin(w3.start) + 120), {
+    mk('session-1', w3.date, fromMin(toMin(w3.start) + 120), {
       name: 'Tom & Beth Walker',
       email: 'walkers@example.com',
       phone: '(555) 010-0119',
       experience: 'first-time',
       anglers: 2,
-      notes: 'Newly retired and finally learning. Please go easy on us!',
+      notes: 'Our 6 year old is nervous around water. Please go easy on us!',
     }, 'pending', 5 * H);
   }
   if (w4) {
-    mk('first-cast', w4.date, w4.start, {
+    mk('session-1', w4.date, w4.start, {
       name: 'Chris Dalton',
       email: 'chris.d@example.com',
       phone: '(555) 010-0108',
@@ -135,13 +137,13 @@ export function buildSeed(): DB {
     }, 'cancelled', 72 * H);
   }
   if (withSamples) {
-    mk('sunset-session', addDays(today, -6), '17:00', {
+    mk('session-3', addDays(today, -6), '17:00', {
       name: 'Marcus Tran',
       email: 'marcus.tran@example.com',
       phone: '(555) 010-0163',
       experience: 'confident',
       anglers: 2,
-      notes: 'Evening at the pond with my daughter. She is 9.',
+      notes: 'My daughter is 9 and loves the dock.',
     }, 'completed', 9 * 24 * H);
   }
 

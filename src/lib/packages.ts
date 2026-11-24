@@ -1,88 +1,117 @@
 import type { PackageId } from './types';
 
+/**
+ * Boaz's real structure: one program, "Learn to Fish With Boaz". Three 45 minute one-on-one sessions for $100 total.
+ * Each session is booked as its own time slot, so each is a "package" here (session-1, session-2, session-3).
+ */
+export const PROGRAM = {
+  name: 'Learn to Fish With Boaz',
+  price: 100,
+  sessionCount: 3,
+  sessionMinutes: 45,
+  format: '1 on 1 sessions',
+  ages: 'Recommended ages 4 to 12',
+  jig: 'Includes a practice knot tying jig',
+  bring: 'Cast net and spinner rod',
+  bringNote: "If you don't have these, Boaz can provide them.",
+  flexNote: "Boaz can adjust the schedule based on the learner's needs.",
+};
+
+/** One line of a session outline. `handsOn` marks the practice parts; `sub` are the bullets under it. */
+export interface OutlineItem {
+  text: string;
+  handsOn?: boolean;
+  sub?: string[];
+}
+
 export interface LessonPackage {
   id: PackageId;
+  /** "Session 1" */
   name: string;
-  level: string; // short label, e.g. "Beginner"
+  /** What the session covers, e.g. "Knots, rod basics and casting" */
+  title: string;
+  number: 1 | 2 | 3;
+  level: string;
   durationMin: number;
   durationLabel: string;
   tagline: string;
+  /** The program price is charged once, on session 1. Sessions 2 and 3 are included. */
   basePrice: number;
   includedAnglers: number;
   extraAnglerPrice: number;
   maxAnglers: number;
-  /** Earliest start time (HH:mm) this lesson can begin, e.g. sunset sessions only run late afternoon onward */
-  earliestStart?: string;
-  /** Tide gate: a lesson may only START between minAhead and maxAhead minutes before a high tide. */
+  /** Tide gate: a session may only START between minAhead and maxAhead minutes before a high tide. */
   tideGate?: { minAhead: number; maxAhead: number; label: string };
-  includes: string[];
-  highlight?: string;
-  /** The stages of a lesson that moves between places, shown as a progression on the card. */
-  path?: string[];
+  /** Earliest start time (HH:mm), if a session can't begin before a certain hour. */
+  earliestStart?: string;
+  outline: OutlineItem[];
 }
 
-/** Boaz fishes these two lessons on the push of the incoming tide: start 1 to 2 hours before high tide. */
+/** Boaz fishes sessions 2 and 3 on the push of the incoming tide: start 1 to 2 hours before high tide. */
 const TIDE_GATE = { minAhead: 60, maxAhead: 120, label: 'Starts 1 to 2 hours before high tide' };
+
+const BASE = { durationMin: PROGRAM.sessionMinutes, durationLabel: '45 minutes', includedAnglers: 1, extraAnglerPrice: 0, maxAnglers: 1 } as const;
 
 export const PACKAGES: LessonPackage[] = [
   {
-    id: 'first-cast',
-    name: 'First Cast',
-    level: 'Beginner',
-    durationMin: 45,
-    durationLabel: '45 minutes',
-    tagline: 'Master the cast in a stress-free backyard, then take it to the pond and catch a real fish.',
-    basePrice: 100,
-    includedAnglers: 2,
-    extraAnglerPrice: 0,
-    maxAnglers: 2,
-    highlight: 'Best for first-timers',
-    path: ['Backyard training', 'Fish the pond'],
-    includes: [
-      'Relaxed backyard training: casting mechanics and accuracy, with no snags and no stress',
-      'Knot tying you can trust, practiced in the backyard first',
-      'Baiting your own hook with cut bait',
-      'Then to the pond: put your new skills to work and land real fish',
+    ...BASE,
+    id: 'session-1',
+    name: 'Session 1',
+    title: 'Knots, rod basics and casting',
+    number: 1,
+    level: 'Foundations',
+    tagline: 'Your first knot, a spinning rod in your hands, and your first casts.',
+    basePrice: PROGRAM.price,
+    outline: [
+      { text: 'Fundamental knot tying', sub: ['Palmer knot'] },
+      { text: 'Basics of a spinning rod' },
+      { text: 'How to cast', handsOn: true, sub: ['Spinner rod', 'Cast net'] },
     ],
   },
   {
-    id: 'summer-angler',
-    name: 'Summer Angler',
-    level: 'Extended',
-    durationMin: 120,
-    durationLabel: '2 hours',
-    tagline: 'Leave with a system, not just a story.',
-    basePrice: 150,
-    includedAnglers: 2,
-    extraAnglerPrice: 0,
-    maxAnglers: 2,
-    highlight: 'Best for bigger fish',
+    ...BASE,
+    id: 'session-2',
+    name: 'Session 2',
+    title: 'Rigs and fishing for bait',
+    number: 2,
+    level: 'On the water',
+    tagline: 'Three rigs that work around Charleston, then catching bait and fish.',
+    basePrice: 0,
     tideGate: TIDE_GATE,
-    includes: [
-      'Choosing between cut and live bait for the fish you want',
-      'Structure fishing: points, drop-offs, docks and weed edges',
-      'Fishing at the right depth, from the surface to the bottom',
-      'Reading bites and setting the hook at the right moment',
+    outline: [
+      { text: 'Learning 3 basic rigs (common around Charleston) and when to use them', sub: ['Carolina rig', 'Double drop (chicken)', 'Popping cork'] },
+      {
+        text: 'Casting for bait and fish',
+        handsOn: true,
+        sub: [
+          'Includes catching bait with a cast net',
+          'Hooking and cutting bait properly, and casting out on a spinner rod for a catch',
+          'Intro to removing hooks, handling fish and safe release',
+        ],
+      },
     ],
   },
   {
-    id: 'sunset-session',
-    name: 'Sunset Session',
-    level: 'Evening',
-    durationMin: 45,
-    durationLabel: '45 minutes',
-    tagline: "Golden hour at the water's edge, when the fish start biting.",
-    basePrice: 100,
-    includedAnglers: 2,
-    extraAnglerPrice: 0,
-    maxAnglers: 2,
-    earliestStart: '16:00',
+    ...BASE,
+    id: 'session-3',
+    name: 'Session 3',
+    title: 'Ready to fish',
+    number: 3,
+    level: 'Putting it together',
+    tagline: 'A better knot, then fishing on your own with Boaz beside you.',
+    basePrice: 0,
     tideGate: TIDE_GATE,
-    includes: [
-      'Fishing the evening bite, when the fish move in to feed',
-      'Live and cut bait setups that work at dusk',
-      'Reading evening feeding windows',
-      'A relaxed pace, great for a parent and child or a quiet night out',
+    outline: [
+      { text: 'Fundamental knot tying', sub: ['Improved clinch knot'] },
+      {
+        text: 'Ready to fish',
+        handsOn: true,
+        sub: [
+          'Includes catching bait with a cast net',
+          'Hooking and cutting bait properly, and casting out on a spinner rod for a catch',
+          'Removing hooks, handling fish and safe release',
+        ],
+      },
     ],
   },
 ];
@@ -91,8 +120,11 @@ export function getPackage(id: string | null | undefined): LessonPackage | undef
   return PACKAGES.find((p) => p.id === id);
 }
 
-export function priceFor(pkg: LessonPackage, anglers: number): number {
-  return pkg.basePrice + Math.max(0, anglers - pkg.includedAnglers) * pkg.extraAnglerPrice;
+/** "Session 2 of 3: Rigs and fishing for bait" */
+export function sessionLabel(id: string | null | undefined, withTitle = true): string {
+  const p = getPackage(id);
+  if (!p) return 'Session';
+  return withTitle ? `Session ${p.number} of ${PROGRAM.sessionCount}: ${p.title}` : `Session ${p.number} of ${PROGRAM.sessionCount}`;
 }
 
 export function formatPrice(n: number): string {

@@ -27,14 +27,15 @@ function KpiBar({ bookings, today }: { bookings: Booking[]; today: string }) {
     const collected = done.filter(inSummer).reduce((s, b) => s + b.totalPrice, 0);
     const booked = upcoming.filter(inSummer).reduce((s, b) => s + b.totalPrice, 0);
     const students = new Set(done.map((b) => b.email.toLowerCase()));
-    const counts = new Map<string, number>();
-    bookings.filter((b) => b.status !== 'cancelled').forEach((b) => counts.set(b.email.toLowerCase(), (counts.get(b.email.toLowerCase()) ?? 0) + 1));
+    // A family is "returning" when they have booked more than one program (distinct confirmation codes).
+    const counts = new Map<string, Set<string>>();
+    bookings.filter((b) => b.status !== 'cancelled').forEach((b) => counts.set(b.email.toLowerCase(), (counts.get(b.email.toLowerCase()) ?? new Set<string>()).add(b.code)));
     return {
       upcoming: upcoming.length,
       pending: bookings.filter((b) => b.status === 'pending').length,
       taught: done.length,
       students: students.size,
-      returning: [...counts.values()].filter((n) => n > 1).length,
+      returning: [...counts.values()].filter((codes) => codes.size > 1).length,
       hours: done.reduce((s, b) => s + hoursOf(b), 0),
       hoursAhead: upcoming.reduce((s, b) => s + hoursOf(b), 0),
       collected,
@@ -44,8 +45,8 @@ function KpiBar({ bookings, today }: { bookings: Booking[]; today: string }) {
   }, [bookings, today]);
 
   const cards = [
-    { icon: Fish, label: 'Upcoming lessons', value: String(k.upcoming), sub: k.pending ? `${k.pending} need approval` : 'All approved', hot: k.pending > 0, id: 'kpi-upcoming' },
-    { icon: GraduationCap, label: 'Lessons taught', value: String(k.taught), sub: `${k.students} student${k.students === 1 ? '' : 's'}, ${k.returning} returning`, id: 'kpi-taught' },
+    { icon: Fish, label: 'Upcoming sessions', value: String(k.upcoming), sub: k.pending ? `${k.pending} need approval` : 'All approved', hot: k.pending > 0, id: 'kpi-upcoming' },
+    { icon: GraduationCap, label: 'Sessions taught', value: String(k.taught), sub: `${k.students} ${k.students === 1 ? 'family' : 'families'}, ${k.returning} returning`, id: 'kpi-taught' },
     { icon: Clock, label: 'Hours on the water', value: fmtHours(k.hours), sub: `+${fmtHours(k.hoursAhead)} h booked ahead`, id: 'kpi-hours' },
     { icon: CircleDollarSign, label: `Summer ${k.summerYear} revenue`, value: formatPrice(k.collected + k.booked), sub: `${formatPrice(k.collected)} collected, ${formatPrice(k.booked)} booked`, id: 'kpi-revenue' },
   ];

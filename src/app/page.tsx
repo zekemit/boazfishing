@@ -12,8 +12,7 @@ import { Header } from '@/components/site/Header';
 import { Hero } from '@/components/site/Hero';
 import { MeetBoaz } from '@/components/site/MeetBoaz';
 import { MobileBookBar } from '@/components/site/MobileBookBar';
-import { BeginnerPath } from '@/components/site/BeginnerPath';
-import { Packages } from '@/components/site/Packages';
+import { Program } from '@/components/site/Program';
 import { WhereWeMeet } from '@/components/site/WhereWeMeet';
 import { Reviews } from '@/components/site/Reviews';
 import { WhyBoaz } from '@/components/site/WhyBoaz';
@@ -25,7 +24,7 @@ export const dynamic = 'force-dynamic';
 export default async function Home() {
   const db = await readDb();
   const photos = getPublicPhotos(db);
-  const next = bookableDays(db, getPackage('first-cast')!, businessNow()).next;
+  const next = bookableDays(db, getPackage('session-1')!, businessNow()).next;
 
   const gallery: PublicPhoto[] = PHOTO_SLOT_IDS.filter((id) => id.startsWith('gallery-'))
     .map((id) => photos[id])
@@ -37,8 +36,7 @@ export default async function Home() {
       <main>
         <Hero photo={photos.hero} next={next} />
         <WhyBoaz />
-        <BeginnerPath />
-        <Packages />
+        <Program />
         <WhereWeMeet />
         <MeetBoaz photo={photos.bio} />
         <Gallery photos={gallery} />

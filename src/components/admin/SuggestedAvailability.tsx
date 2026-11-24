@@ -47,7 +47,7 @@ const AHEAD = [
   { days: 84, label: '12 weeks' },
 ];
 const BUFFERS = [0, 15, 30, 60, 90];
-const SHORT_NAME: Record<string, string> = { 'first-cast': 'First Cast', 'summer-angler': 'Summer Angler', 'sunset-session': 'Sunset' };
+const SHORT_NAME: Record<string, string> = { 'session-1': 'Session 1', 'session-2': 'Session 2', 'session-3': 'Session 3' };
 
 function ago(iso: string): string {
   const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60_000));
@@ -316,7 +316,7 @@ export function SuggestedAvailability({ onChanged }: { onChanged: () => void }) 
                   </div>
                   <label className="flex min-h-[44px] items-start gap-3 text-sm">
                     <input type="checkbox" checked={p.flex} onChange={(e) => void savePrefs({ ...p, flex: e.target.checked })} className="mt-1 h-5 w-5 accent-river" />
-                    <span><span className="font-semibold">Also suggest First Cast-only blocks</span><span className="block text-ink-soft">Morning and late-afternoon blocks in the free time around the tide windows. First Cast is not tide-timed.</span></span>
+                    <span><span className="font-semibold">Also suggest Session 1 blocks</span><span className="block text-ink-soft">Morning and late-afternoon blocks in the free time around the tide windows. Session 1 (knots and casting) is not tide-timed, and every family needs one.</span></span>
                   </label>
                   <label className="flex min-h-[44px] items-start gap-3 text-sm">
                     <input type="checkbox" checked={p.allDayBusy} onChange={(e) => void savePrefs({ ...p, allDayBusy: e.target.checked })} className="mt-1 h-5 w-5 accent-river" />
@@ -368,7 +368,7 @@ export function SuggestedAvailability({ onChanged }: { onChanged: () => void }) 
                           {s.high ? (
                             <span className="inline-flex items-center gap-1 text-sm font-semibold text-river"><ArrowUp className="h-3.5 w-3.5" aria-hidden /> High tide {fmt12(s.high)}</span>
                           ) : (
-                            <span className="text-sm font-semibold text-ink-soft">First Cast only (not tide-timed)</span>
+                            <span className="text-sm font-semibold text-ink-soft">Session 1 only (not tide-timed)</span>
                           )}
                           {s.tags.map((t) => (
                             <span key={t} className={cn('rounded-full px-2 py-0.5 text-xs font-bold', t === 'Weekend' ? 'bg-river-50 text-river' : 'bg-sunset-50 text-sunset-700')}>{t}</span>
@@ -378,7 +378,7 @@ export function SuggestedAvailability({ onChanged }: { onChanged: () => void }) 
                           {s.fits.map((f) => (
                             <span key={f.packageId} title={`Starts: ${f.starts.map(fmt12).join(', ')}`} className="rounded-md bg-sand-100 px-2 py-1 text-sm text-ink-soft">
                               <strong className="text-ink">{SHORT_NAME[f.packageId] ?? f.name}</strong> · {f.starts.length} start{f.starts.length === 1 ? '' : 's'}
-                              {f.packageId !== 'first-cast' && <span className="text-ink-mute"> ({f.starts.map(fmt12).join(', ')})</span>}
+                              {f.packageId !== 'session-1' && <span className="text-ink-mute"> ({f.starts.map(fmt12).join(', ')})</span>}
                             </span>
                           ))}
                         </p>

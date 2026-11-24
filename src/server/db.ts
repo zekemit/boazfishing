@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import type { DB } from '@/lib/types';
+import type { Booking, DB } from '@/lib/types';
 import { defaultPhotos } from '@/lib/photos';
 import { buildSeed } from './seed';
 import { dbBackend, usingBlob } from './storage';
@@ -24,6 +24,9 @@ function normalize(db: DB): DB {
   db.photos = { ...defaultPhotos(), ...(db.photos ?? {}) };
   db.notifications ??= [];
   db.agendaSent ??= {};
+  // Bookings made before the 3-session program used the old lesson ids.
+  const legacy: Record<string, Booking['packageId']> = { 'first-cast': 'session-1', 'summer-angler': 'session-2', 'sunset-session': 'session-2' };
+  for (const b of db.bookings) if (legacy[b.packageId as string]) b.packageId = legacy[b.packageId as string];
   db.calendarToken ||= crypto.randomBytes(24).toString('hex');
   if (!db.secret) db.secret = crypto.randomBytes(32).toString('hex');
   return db;

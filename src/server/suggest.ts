@@ -12,7 +12,7 @@ export const DEFAULT_PREFS: SuggestPrefs = {
   bufferMin: 30,
   aheadDays: 28,
   allDayBusy: false,
-  flex: false,
+  flex: true,
 };
 
 export interface Suggestion {
@@ -92,7 +92,7 @@ export function buildSuggestions(input: {
     const dayHighs = highs?.get(date) ?? [];
     let daySuggested = false;
     let coveredByExisting = false;
-    /** Tide windows already suggested for this day, so First Cast-only blocks are never offered on top of them. */
+    /** Tide windows already suggested for this day, so Session 1-only blocks are never offered on top of them. */
     const taken: Range[] = [];
 
     /** Best free stretch inside `want`, scored by how many bookable starts it gives. */
@@ -112,8 +112,8 @@ export function buildSuggestions(input: {
           .map((p) => ({ packageId: p.id, name: p.name, starts: startsFor(p, date, [window], [], now, dayHighs) }))
           .filter((f) => f.starts.length > 0);
         const by = (id: string) => fits.find((f) => f.packageId === id)?.starts.length ?? 0;
-        const gated = by('summer-angler') + by('sunset-session');
-        if (kind === 'tide' ? gated === 0 : by('first-cast') < 2) continue;
+        const gated = by('session-2') + by('session-3');
+        if (kind === 'tide' ? gated === 0 : by('session-1') < 2) continue;
         const weekend = weekday(date) === 0 || weekday(date) === 6;
         const trimmed = s > lo || e < hi;
         // Name the calendar events that cut into the ideal window (padded by the buffer).
@@ -123,12 +123,12 @@ export function buildSuggestions(input: {
           .map((b) => ({ title: b.title, start: fromMin(Math.max(0, b.a)), end: fromMin(Math.min(1439, b.z)) }));
         const score =
           kind === 'tide'
-            ? by('summer-angler') * 10 + by('sunset-session') * 8 + Math.min(by('first-cast'), 6) + (weekend ? 15 : 0) - (trimmed || trimmedBy.length ? 10 : 0)
-            : Math.min(by('first-cast'), 6) + (weekend ? 5 : 0);
+            ? by('session-2') * 10 + by('session-3') * 10 + Math.min(by('session-1'), 6) + (weekend ? 15 : 0) - (trimmed || trimmedBy.length ? 10 : 0)
+            : Math.min(by('session-1'), 6) + (weekend ? 5 : 0);
         const tags: string[] = [];
         if (weekend) tags.push('Weekend');
-        if (by('sunset-session') > 0) tags.push('Sunset-ready');
-        if (kind === 'tide' && by('summer-angler') >= 3 && !trimmed && !trimmedBy.length) tags.push('Full tide window');
+        if (by('session-2') > 0 && by('session-3') > 0) tags.push('Fits sessions 2 and 3');
+        if (kind === 'tide' && by('session-2') >= 3 && !trimmed && !trimmedBy.length) tags.push('Full tide window');
         const cand: Suggestion = {
           id: `${date}_${fromMin(s)}_${fromMin(e)}`,
           date,
@@ -152,7 +152,8 @@ export function buildSuggestions(input: {
         // Starts for the tide-timed lessons run from 2h to 1h before high tide; a 2 hour lesson started at the last one ends 1h after.
         const first = grid(h - GATED[0].tideGate!.maxAhead, 'up');
         const last = grid(h - GATED[0].tideGate!.minAhead, 'down');
-        const s = fit([first, last + Math.max(...GATED.map((p) => p.durationMin))], 'tide', h);
+        // The window has to end on the half hour, so round the end of the last lesson up, or a 45 minute lesson loses its last start.
+        const s = fit([first, grid(last + Math.max(...GATED.map((p) => p.durationMin)), 'up')], 'tide', h);
         if (s) {
           out.push(s);
           taken.push([toMin(s.start), toMin(s.end)]);

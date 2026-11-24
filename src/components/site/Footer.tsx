@@ -69,7 +69,7 @@ export function Footer() {
             <span className="display-md text-2xl">Boaz Fishing Co.</span>
           </a>
           <p className="prose-serif mt-4 max-w-sm text-white/70">
-            Summer fishing lessons for every skill level. All gear provided. Patient coaching, honest fish stories.
+            One-on-one fishing lessons for kids ages 4 to 12. Three 45 minute sessions, $100 total. Patient coaching, honest fish stories.
           </p>
           <p className="mt-3 max-w-sm text-sm text-white/70">
             <span className="font-semibold text-white/90">Meet:</span> {MEETING.spot.toLowerCase()}. {meetingWhere()}.

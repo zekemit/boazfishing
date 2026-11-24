@@ -20,7 +20,7 @@ export function WhereWeMeet() {
               {meetingWhere()}. Come to the pavilion and look for Boaz. He confirms by text or email the day before, with a weather check.
             </p>
             <p className="mt-3 text-sm text-white/70">
-              Booking First Cast? It starts with backyard training, so your meeting address is on your booking confirmation.
+              Session 1 is hands-on practice at a different spot, so its meeting address is on your booking confirmation.
             </p>
           </div>
           <a href={map} target="_blank" rel="noopener noreferrer" className="btn-primary justify-self-start md:justify-self-end">

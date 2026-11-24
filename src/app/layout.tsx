@@ -9,10 +9,10 @@ export const metadata: Metadata = {
     template: '%s | Boaz Fishing Co.',
   },
   description:
-    'Patient, hands-on summer fishing lessons for beginners, kids and anglers ready to land bigger fish. All gear provided. Book your lesson online.',
+    'Learn to Fish With Boaz: one-on-one fishing lessons for kids ages 4 to 12. Three 45 minute sessions for $100. Book online.',
   openGraph: {
     title: 'Boaz Fishing Co. | Master the water this summer',
-    description: 'Hands-on fishing lessons for every skill level. All gear provided. Book online in a minute.',
+    description: 'One-on-one fishing lessons for kids ages 4 to 12. Three 45 minute sessions for $100. Book online in a minute.',
     type: 'website',
   },
 };

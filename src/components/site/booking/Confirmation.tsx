@@ -1,60 +1,58 @@
 'use client';
 
 import { motion, useReducedMotion } from 'framer-motion';
-import { CalendarPlus, Check, MessageSquareText } from 'lucide-react';
+import { Backpack, CalendarPlus, Check, MessageSquareText } from 'lucide-react';
+import type { MeetingInfo } from '@/content/site';
 import { fmtDateLong, fmtRange } from '@/lib/time';
 import { EXPERIENCE_LABELS, type Booking } from '@/lib/types';
-import { formatPrice, getPackage } from '@/lib/packages';
-import type { MeetingInfo } from '@/content/site';
+import { PROGRAM, formatPrice, sessionLabel } from '@/lib/packages';
 
-function buildIcs(b: Booking, lessonName: string, meet: MeetingInfo): string {
+/** One .ics with an event for each of the three sessions, built right in the browser. */
+function buildIcs(sessions: Booking[], meetings: MeetingInfo[]): string {
   const dt = (date: string, time: string) => `${date.replace(/-/g, '')}T${time.replace(':', '')}00`;
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Boaz Fishing Co.//Booking//EN',
-    'CALSCALE:GREGORIAN',
+  const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,');
+  const events = sessions.flatMap((b, i) => [
     'BEGIN:VEVENT',
-    `UID:${b.code}@boazfishing`,
+    `UID:${b.code}-${b.sessionNo ?? i + 1}@boazfishing`,
     `DTSTAMP:${stamp}`,
     `DTSTART:${dt(b.date, b.start)}`,
     `DTEND:${dt(b.date, b.end)}`,
-    `SUMMARY:${lessonName} with Boaz Fishing Co.`,
-    `LOCATION:${meet.full.replace(/,/g, '\\,')}`,
-    `DESCRIPTION:Confirmation ${b.code}. ${b.anglers} angler${b.anglers === 1 ? '' : 's'}. Meet ${meet.lower.replace(/,/g, '\\,')}. Boaz will confirm by text or email. Pay in person.`,
+    `SUMMARY:${esc(`${sessionLabel(b.packageId, false)}: ${PROGRAM.name}`)}`,
+    `LOCATION:${esc(meetings[i]?.full ?? '')}`,
+    `DESCRIPTION:${esc(`Confirmation ${b.code}. ${sessionLabel(b.packageId)}. Meet ${meetings[i]?.lower ?? 'where Boaz tells you'}. Bring a cast net and spinner rod, or Boaz can provide them. Boaz will confirm by text or email.`)}`,
     'END:VEVENT',
-    'END:VCALENDAR',
-  ].join('\r\n');
+  ]);
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Boaz Fishing Co.//Booking//EN', 'CALSCALE:GREGORIAN', ...events, 'END:VCALENDAR'].join('\r\n');
 }
 
-export function Confirmation({ booking, cancelUrl, meeting, onAnother }: { booking: Booking; cancelUrl?: string | null; meeting: MeetingInfo | null; onAnother: () => void }) {
+export function Confirmation({
+  sessions,
+  meetings,
+  cancelUrl,
+  onAnother,
+}: {
+  sessions: Booking[];
+  meetings: MeetingInfo[] | null;
+  cancelUrl?: string | null;
+  onAnother: () => void;
+}) {
   const reduce = useReducedMotion();
-  const meet: MeetingInfo = meeting ?? { full: 'Boaz will text you the meeting spot', lower: 'where Boaz tells you', mapUrl: '', note: null, short: '' };
-  const pkg = getPackage(booking.packageId);
-  const firstName = booking.name.trim().split(/\s+/)[0];
+  const first = sessions[0];
+  const meets: MeetingInfo[] = sessions.map((_, i) => meetings?.[i] ?? { full: 'Boaz will text you the meeting spot', lower: 'where Boaz tells you', mapUrl: '', note: null, short: '' });
+  const firstName = first.name.trim().split(/\s+/)[0];
 
   const downloadIcs = () => {
-    const blob = new Blob([buildIcs(booking, pkg?.name ?? 'Fishing lesson', meet)], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([buildIcs(sessions, meets)], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `boaz-fishing-${booking.code}.ics`;
+    a.download = `boaz-fishing-${first.code}.ics`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
   };
-
-  const rows: Array<[string, string]> = [
-    ['Confirmation code', booking.code],
-    ['Lesson', `${pkg?.name ?? ''} (${pkg?.durationLabel ?? ''})`],
-    ['Date', fmtDateLong(booking.date)],
-    ['Time', fmtRange(booking.start, booking.end)],
-    ['Anglers', `${booking.anglers}, ${EXPERIENCE_LABELS[booking.experience].toLowerCase()}`],
-    ['Where to meet', meet.full],
-    ['Due at your lesson', formatPrice(booking.totalPrice)],
-  ];
 
   return (
     <div data-testid="confirmation">
@@ -73,18 +71,49 @@ export function Confirmation({ booking, cancelUrl, meeting, onAnother }: { booki
         <div>
           <h3 className="display-md text-3xl sm:text-4xl">You’re on the water, {firstName}.</h3>
           <p className="prose-serif mt-2 text-lg text-ink-soft">
-            Your time is locked in. Meet {meet.lower}. Boaz will text or email you to confirm.
+            All {sessions.length} sessions are locked in. Boaz will text or email you to confirm. Confirmation code <strong className="tracking-wide text-ink">{first.code}</strong>.
           </p>
         </div>
       </div>
 
-      <dl className="mt-8 divide-y divide-sand-300 rounded-xl border border-sand-300 bg-white">
-        {rows.map(([k, v]) => (
-          <div key={k} className="flex flex-wrap justify-between gap-x-6 gap-y-0.5 px-5 py-3.5">
-            <dt className="text-ink-mute">{k}</dt>
-            <dd className="font-semibold">{k === 'Confirmation code' ? <span className="tracking-wide">{v}</span> : v}</dd>
-          </div>
+      <ol className="mt-8 grid gap-3">
+        {sessions.map((b, i) => (
+          <li key={b.id} className="rounded-xl border border-sand-300 bg-white p-4 sm:p-5" data-testid="confirmed-session">
+            <p className="flex flex-wrap items-baseline gap-x-3">
+              <span className="display-md text-xl">Session {b.sessionNo ?? i + 1}</span>
+              <span className="text-ink-mute">{sessionLabel(b.packageId).replace(/^Session \d of \d: /, '')}</span>
+            </p>
+            <p className="mt-1 font-semibold">
+              {fmtDateLong(b.date)}, {fmtRange(b.start, b.end)}
+            </p>
+            <p className="mt-1 text-ink-soft">
+              <span className="text-ink-mute">Where to meet: </span>
+              <span className="font-semibold text-ink">{meets[i].full}</span>
+              {meets[i].mapUrl && (
+                <>
+                  {' '}
+                  <a href={meets[i].mapUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-river underline underline-offset-4">
+                    Open in Maps
+                  </a>
+                </>
+              )}
+            </p>
+            {meets[i].note && <p className="mt-1 text-sm text-ink-soft">{meets[i].note}</p>}
+          </li>
         ))}
+      </ol>
+
+      <dl className="mt-4 divide-y divide-sand-300 rounded-xl border border-sand-300 bg-white">
+        <div className="flex flex-wrap justify-between gap-x-6 gap-y-0.5 px-5 py-3.5">
+          <dt className="text-ink-mute">Learner</dt>
+          <dd className="font-semibold">1 on 1, {EXPERIENCE_LABELS[first.experience].toLowerCase()}</dd>
+        </div>
+        <div className="flex flex-wrap justify-between gap-x-6 gap-y-0.5 px-5 py-3.5">
+          <dt className="text-ink-mute">Due in person</dt>
+          <dd className="font-semibold">
+            {formatPrice(PROGRAM.price)} for all {PROGRAM.sessionCount} sessions
+          </dd>
+        </div>
       </dl>
 
       <div className="mt-6 flex gap-3 rounded-xl bg-river-50 p-5">
@@ -93,27 +122,35 @@ export function Confirmation({ booking, cancelUrl, meeting, onAnother }: { booki
           <p className="font-semibold text-ink">What happens next</p>
           <ul className="mt-1.5 list-disc space-y-1 pl-5">
             <li>Boaz reviews your request and confirms by text or email.</li>
-            {booking.packageId === 'first-cast' && (
-              <li>Your First Cast lesson starts in a relaxed backyard setup, then moves to the pond once your casting is sharp.</li>
-            )}
-            <li>Meet {meet.lower}. {meet.note ? `${meet.note} ` : ''}Boaz will confirm and send a weather check the day before.{meet.mapUrl && <> <a href={meet.mapUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-river underline underline-offset-4">Open in Maps</a></>}</li>
-            <li>Bring sunscreen, water and a hat. Everything else is provided.</li>
+            <li>You will get a reminder and a weather check before each session.</li>
+            <li>{PROGRAM.jig}.</li>
+            <li>{PROGRAM.flexNote}</li>
           </ul>
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-3 rounded-xl border border-sand-300 bg-white p-5">
+        <Backpack className="mt-0.5 h-5 w-5 shrink-0 text-river" aria-hidden />
+        <div className="text-ink-soft">
+          <p className="font-semibold text-ink">What to bring</p>
+          <p className="mt-1">
+            {PROGRAM.bring}. {PROGRAM.bringNote}
+          </p>
         </div>
       </div>
 
       {cancelUrl && (
         <p className="mt-4 text-sm text-ink-soft">
-          Plans change? You can <a href={cancelUrl} className="font-semibold text-river underline underline-offset-4">cancel this lesson</a> up to 24 hours ahead. We also put this link in your emails.
+          Plans change? You can <a href={cancelUrl} className="font-semibold text-river underline underline-offset-4">cancel your sessions</a> up to 24 hours ahead. We also put this link in your emails.
         </p>
       )}
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button type="button" onClick={downloadIcs} className="btn-dark">
-          <CalendarPlus className="h-5 w-5" aria-hidden /> Add to calendar
+          <CalendarPlus className="h-5 w-5" aria-hidden /> Add all 3 to calendar
         </button>
         <button type="button" onClick={onAnother} className="btn-outline">
-          Book another lesson
+          Book for another learner
         </button>
       </div>
     </div>

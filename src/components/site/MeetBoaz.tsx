@@ -46,7 +46,7 @@ export function MeetBoaz({ photo }: { photo: PublicPhoto }) {
               ))}
             </ul>
           </div>
-          <BookButton className="btn-dark mt-8">Book a lesson with Boaz</BookButton>
+          <BookButton className="btn-dark mt-8">Book with Boaz</BookButton>
         </div>
       </div>
     </section>

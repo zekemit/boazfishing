@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { BellRing, CalendarCheck, CalendarRange, ClipboardList, Compass, Images, LogOut } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { getPackage } from '@/lib/packages';
+import { sessionLabel } from '@/lib/packages';
 import { fmtDateShort } from '@/lib/time';
 import type { BookingsPayload } from '@/lib/types';
 import { useRemote } from '@/hooks/useRemote';
@@ -63,7 +63,7 @@ function Shell() {
     for (const b of list) {
       if (!seen.current.has(b.id)) {
         seen.current.add(b.id);
-        toast.info(`New booking: ${b.name}, ${getPackage(b.packageId)?.name ?? 'lesson'} on ${fmtDateShort(b.date)}`);
+        toast.info(`New booking: ${b.name}, ${sessionLabel(b.packageId, false)} on ${fmtDateShort(b.date)}`);
       }
     }
   }, [bookings.data, toast]);
