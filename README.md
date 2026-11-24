@@ -161,4 +161,4 @@ Stop the server, delete `data/`, start again. A fresh seed is created.
 
 ## Deploys
 
-This repo is connected to the Vercel project `boaz-fishing-co`. Every push to `main` deploys to production at https://boaz-fishing-co.vercel.app and every other branch gets a preview URL.
+This repo is connected to the Vercel project `boaz-fishing-co`. Every push to `main` deploys to production at https://boazfishing.vercel.app (the older boaz-fishing-co.vercel.app address still works) and every other branch gets a preview URL.

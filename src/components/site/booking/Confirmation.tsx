@@ -15,7 +15,7 @@ function buildIcs(b: Booking, lessonName: string): string {
     'PRODID:-//Boaz Fishing Co.//Booking//EN',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
-    `UID:${b.code}@boaz-fishing-co`,
+    `UID:${b.code}@boazfishing`,
     `DTSTAMP:${stamp}`,
     `DTSTART:${dt(b.date, b.start)}`,
     `DTEND:${dt(b.date, b.end)}`,
