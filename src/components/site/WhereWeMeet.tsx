@@ -1,5 +1,5 @@
 import { MapPin, Navigation } from 'lucide-react';
-import { MEETING, meetingMapUrl } from '@/content/site';
+import { MEETING, meetingMapUrl, meetingWhere } from '@/content/site';
 
 /** Tells anyone who finds the site (not just neighbors) exactly where to show up. */
 export function WhereWeMeet() {
@@ -17,15 +17,12 @@ export function WhereWeMeet() {
               {MEETING.spot}
             </h2>
             <p className="prose-serif mt-2 text-lg text-white/85">
-              {MEETING.area}
-              {MEETING.address ? `, ${MEETING.address}` : ''}. Come to the pavilion and look for Boaz. He confirms by text or email the day before, with a weather check.
+              {meetingWhere()}. Come to the pavilion and look for Boaz. He confirms by text or email the day before, with a weather check.
             </p>
           </div>
-          {map && (
-            <a href={map} target="_blank" rel="noopener noreferrer" className="btn-primary justify-self-start md:justify-self-end">
-              <Navigation className="h-5 w-5" aria-hidden /> Open in Maps
-            </a>
-          )}
+          <a href={map} target="_blank" rel="noopener noreferrer" className="btn-primary justify-self-start md:justify-self-end">
+            <Navigation className="h-5 w-5" aria-hidden /> Open in Maps
+          </a>
         </div>
       </div>
     </section>

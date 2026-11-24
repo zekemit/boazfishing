@@ -171,7 +171,7 @@ export function studentApproved(b: Booking, cancelUrl?: string): Message {
     ...BRING.map((x) => `- ${x}`),
     'Rods, reels and bait are all provided.',
     '',
-    `Meet ${meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1)}.${meetingMapUrl() ? ` Map: ${meetingMapUrl()}` : ''} Need to change plans? Text Boaz at least 24 hours ahead.`,
+    `Meet ${meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1)}. Map: ${meetingMapUrl()}\nNeed to change plans? Text Boaz at least 24 hours ahead.`,
     ...(cancelBlock(cancelUrl).text ? [cancelBlock(cancelUrl).text] : []),
     '',
     c.text,
@@ -183,7 +183,7 @@ export function studentApproved(b: Booking, cancelUrl?: string): Message {
 ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
 <p style="margin:6px 0 0">Rods, reels and bait are all provided.</p>
-<p style="color:#46534D">Meet <strong>${esc(meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1))}</strong>.${meetingMapUrl() ? ` <a href="${meetingMapUrl()}" style="color:#B45309;font-weight:700">Open in Maps</a>` : ''} Need to change plans? Text Boaz at least 24 hours ahead.</p>
+<p style="color:#46534D">Meet <strong>${esc(meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1))}</strong>. <a href="${meetingMapUrl()}" style="color:#B45309;font-weight:700">Open in Maps</a> Need to change plans? Text Boaz at least 24 hours ahead.</p>
 ${cancelBlock(cancelUrl).html}
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
   );

@@ -7,16 +7,23 @@ export const BRAND = {
 };
 
 /**
- * Where lessons meet. Add the street address below when you have it and it shows up everywhere:
- * the website, the booking summary, every email, and the calendar invites (with a Maps link).
+ * Where lessons meet. When you have the exact street address, fill in `address` and it is added everywhere:
+ * the website, the booking summary, every email, and the calendar invites.
  */
 export const MEETING = {
   spot: 'Under the pavilion near the dock',
+  road: 'the end of Red Tide Road',
   area: 'Oyster Point neighborhood',
   address: '',
+  /** What the Open in Maps button searches for. */
+  mapQuery: 'Red Tide Road, Oyster Point',
 };
-export const meetingFull = (): string => [MEETING.spot, MEETING.area, MEETING.address].filter(Boolean).join(', ');
-export const meetingMapUrl = (): string | null => (MEETING.address ? `https://maps.google.com/?q=${encodeURIComponent(`${MEETING.address} ${MEETING.area}`)}` : null);
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+/** "Under the pavilion near the dock at the end of Red Tide Road, Oyster Point neighborhood" */
+export const meetingFull = (): string => [`${MEETING.spot} at ${MEETING.road}`, MEETING.area, MEETING.address].filter(Boolean).join(', ');
+/** "At the end of Red Tide Road, Oyster Point neighborhood" */
+export const meetingWhere = (): string => [cap(`at ${MEETING.road}`), MEETING.area, MEETING.address].filter(Boolean).join(', ');
+export const meetingMapUrl = (): string => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MEETING.address ? `${MEETING.address} ${MEETING.area}` : MEETING.mapQuery)}`;
 
 export const NAV = [
   { href: '#why', label: 'Why Boaz' },
@@ -121,7 +128,7 @@ export const FAQS = [
   },
   {
     q: 'Where do lessons meet?',
-    a: 'Under the pavilion near the dock in the Oyster Point neighborhood. Come to the pavilion and look for Boaz. He will text or email you to confirm the day before, along with a weather check.',
+    a: 'Under the pavilion near the dock at the end of Red Tide Road, in the Oyster Point neighborhood. Come to the pavilion and look for Boaz. He will text or email you to confirm the day before, along with a weather check.',
   },
   {
     q: 'What should we bring?',

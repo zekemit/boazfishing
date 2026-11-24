@@ -5,7 +5,7 @@ import { CalendarPlus, Check, MessageSquareText } from 'lucide-react';
 import { fmtDateLong, fmtRange } from '@/lib/time';
 import { EXPERIENCE_LABELS, type Booking } from '@/lib/types';
 import { formatPrice, getPackage } from '@/lib/packages';
-import { MEETING, meetingFull, meetingMapUrl } from '@/content/site';
+import { MEETING, meetingFull, meetingMapUrl, meetingWhere } from '@/content/site';
 
 function buildIcs(b: Booking, lessonName: string): string {
   const dt = (date: string, time: string) => `${date.replace(/-/g, '')}T${time.replace(':', '')}00`;
@@ -72,7 +72,7 @@ export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booki
         <div>
           <h3 className="display-md text-3xl sm:text-4xl">You’re on the water, {firstName}.</h3>
           <p className="prose-serif mt-2 text-lg text-ink-soft">
-            Your time is locked in. Meet {MEETING.spot.toLowerCase()} in the {MEETING.area}. Boaz will text or email you to confirm.
+            Your time is locked in. Meet {MEETING.spot.toLowerCase()}. {meetingWhere()}. Boaz will text or email you to confirm.
           </p>
         </div>
       </div>
@@ -95,7 +95,7 @@ export function Confirmation({ booking, cancelUrl, onAnother }: { booking: Booki
             {booking.packageId === 'first-cast' && (
               <li>Your First Cast lesson starts in a relaxed backyard setup, then moves to the pond once your casting is sharp.</li>
             )}
-            <li>Meet {MEETING.spot.toLowerCase()}, {MEETING.area}. Boaz will confirm and send a weather check the day before.{meetingMapUrl() && <> <a href={meetingMapUrl()!} target="_blank" rel="noopener noreferrer" className="font-semibold text-river underline underline-offset-4">Open in Maps</a></>}</li>
+            <li>Meet {MEETING.spot.toLowerCase()}. {meetingWhere()}. Boaz will confirm and send a weather check the day before. <a href={meetingMapUrl()} target="_blank" rel="noopener noreferrer" className="font-semibold text-river underline underline-offset-4">Open in Maps</a></li>
             <li>Bring sunscreen, water and a hat. Everything else is provided.</li>
           </ul>
         </div>
