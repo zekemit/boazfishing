@@ -1,6 +1,6 @@
 import type { Booking } from '@/lib/types';
 import { getPackage } from '@/lib/packages';
-import { BEGINNER_PATH } from '@/content/site';
+import { BEGINNER_PATH, meetingFull, meetingMapUrl } from '@/content/site';
 import { fmt12, fmtDateLong, fmtDateShort, fmtRange } from '@/lib/time';
 import { boazEmail, boazPhone, prettyPhone, siteUrl } from './config';
 
@@ -49,6 +49,7 @@ function details(b: Booking): [string, string][] {
   return [
     ['Lesson', `${pkg?.name ?? ''} (${pkg?.durationLabel ?? ''})`],
     ['When', `${fmtDateLong(b.date)}, ${fmtRange(b.start, b.end)}`],
+    ['Where to meet', meetingFull()],
     ['Anglers', String(b.anglers)],
     ['Due in person', `$${b.totalPrice}`],
     ['Confirmation code', b.code],
@@ -76,7 +77,7 @@ export function studentConfirmation(b: Booking, cancelUrl?: string): Message {
   const text = [
     `Hi ${first},`,
     '',
-    "You're on the schedule! Boaz will text or email you to confirm the exact meeting spot.",
+    `You're on the schedule! Meet ${meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1)}. Boaz will text or email you to confirm.`,
     '',
     ...details(b).map(([k, v]) => `${k}: ${v}`),
     '',
@@ -92,7 +93,7 @@ export function studentConfirmation(b: Booking, cancelUrl?: string): Message {
   ].join('\n');
   const html = shell(
     'Your lesson is booked',
-    `<p style="margin-top:0">Hi ${esc(first)},</p><p>You're on the schedule! Boaz will text or email you to confirm the exact meeting spot.</p>
+    `<p style="margin-top:0">Hi ${esc(first)},</p><p>You're on the schedule! Meet <strong>${esc(meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1))}</strong>. Boaz will text or email you to confirm.</p>
 <table style="border-collapse:collapse;margin:8px 0">${details(b).map(([k, v]) => row(k, v)).join('')}</table>
 ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
@@ -170,7 +171,7 @@ export function studentApproved(b: Booking, cancelUrl?: string): Message {
     ...BRING.map((x) => `- ${x}`),
     'Rods, reels and bait are all provided.',
     '',
-    'Boaz will text you the exact meeting spot. Need to change plans? Text him at least 24 hours ahead.',
+    `Meet ${meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1)}.${meetingMapUrl() ? ` Map: ${meetingMapUrl()}` : ''} Need to change plans? Text Boaz at least 24 hours ahead.`,
     ...(cancelBlock(cancelUrl).text ? [cancelBlock(cancelUrl).text] : []),
     '',
     c.text,
@@ -182,7 +183,7 @@ export function studentApproved(b: Booking, cancelUrl?: string): Message {
 ${bp?.html ?? ''}
 <div style="font-weight:800;margin-top:18px">What to bring</div><ul style="margin:6px 0 0;padding-left:20px">${BRING.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
 <p style="margin:6px 0 0">Rods, reels and bait are all provided.</p>
-<p style="color:#46534D">Boaz will text you the exact meeting spot. Need to change plans? Text him at least 24 hours ahead.</p>
+<p style="color:#46534D">Meet <strong>${esc(meetingFull().charAt(0).toLowerCase() + meetingFull().slice(1))}</strong>.${meetingMapUrl() ? ` <a href="${meetingMapUrl()}" style="color:#B45309;font-weight:700">Open in Maps</a>` : ''} Need to change plans? Text Boaz at least 24 hours ahead.</p>
 ${cancelBlock(cancelUrl).html}
 <div style="border-top:1px solid #EBE5DA;margin-top:18px;padding-top:14px;color:#46534D">${c.html}</div>`,
   );

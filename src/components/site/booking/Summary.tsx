@@ -1,4 +1,5 @@
-import { CalendarDays, Clock, Fish, ShieldCheck, Users } from 'lucide-react';
+import { CalendarDays, Clock, Fish, MapPin, ShieldCheck, Users } from 'lucide-react';
+import { MEETING } from '@/content/site';
 import { fmtDateLong, fmtDateShort, fmtRange, fromMin, toMin } from '@/lib/time';
 import { formatPrice, priceFor, type LessonPackage } from '@/lib/packages';
 
@@ -56,6 +57,13 @@ export function Summary({ pkg, date, start, anglers, showAnglers }: SummaryProps
             <Clock className="mt-0.5 h-5 w-5 shrink-0 text-river" aria-hidden />
             <span className={start && end ? 'font-semibold' : 'text-ink-mute'}>
               {start && end ? fmtRange(start, end) : 'Pick a start time'}
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-river" aria-hidden />
+            <span>
+              <span className="block font-semibold">{MEETING.spot}</span>
+              <span className="text-sm text-ink-mute">{MEETING.area}</span>
             </span>
           </li>
           {showAnglers && (

@@ -6,9 +6,22 @@ export const BRAND = {
   short: 'Boaz Fishing Co.',
 };
 
+/**
+ * Where lessons meet. Add the street address below when you have it and it shows up everywhere:
+ * the website, the booking summary, every email, and the calendar invites (with a Maps link).
+ */
+export const MEETING = {
+  spot: 'Under the pavilion near the dock',
+  area: 'Oyster Point neighborhood',
+  address: '',
+};
+export const meetingFull = (): string => [MEETING.spot, MEETING.area, MEETING.address].filter(Boolean).join(', ');
+export const meetingMapUrl = (): string | null => (MEETING.address ? `https://maps.google.com/?q=${encodeURIComponent(`${MEETING.address} ${MEETING.area}`)}` : null);
+
 export const NAV = [
   { href: '#why', label: 'Why Boaz' },
   { href: '#lessons', label: 'Lessons' },
+  { href: '#where', label: 'Where' },
   { href: '#meet', label: 'Meet Boaz' },
   { href: '#gallery', label: 'Gallery' },
   { href: '#reviews', label: 'Reviews' },
@@ -105,6 +118,10 @@ export const FAQS = [
   {
     q: 'What happens if the weather is bad?',
     a: 'Safety comes first. If lightning, high winds or heavy rain are in the forecast, Boaz will message you the morning of your lesson and move it to another open date at no charge. Light rain and overcast skies often fish great, so we go unless it is unsafe.',
+  },
+  {
+    q: 'Where do lessons meet?',
+    a: 'Under the pavilion near the dock in the Oyster Point neighborhood. Come to the pavilion and look for Boaz. He will text or email you to confirm the day before, along with a weather check.',
   },
   {
     q: 'What should we bring?',

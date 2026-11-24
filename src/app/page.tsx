@@ -14,6 +14,7 @@ import { MeetBoaz } from '@/components/site/MeetBoaz';
 import { MobileBookBar } from '@/components/site/MobileBookBar';
 import { BeginnerPath } from '@/components/site/BeginnerPath';
 import { Packages } from '@/components/site/Packages';
+import { WhereWeMeet } from '@/components/site/WhereWeMeet';
 import { Reviews } from '@/components/site/Reviews';
 import { WhyBoaz } from '@/components/site/WhyBoaz';
 import { Booking } from '@/components/site/booking/Booking';
@@ -38,6 +39,7 @@ export default async function Home() {
         <WhyBoaz />
         <BeginnerPath />
         <Packages />
+        <WhereWeMeet />
         <MeetBoaz photo={photos.bio} />
         <Gallery photos={gallery} />
         <Reviews />

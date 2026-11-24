@@ -1,6 +1,7 @@
 import type { Booking } from '@/lib/types';
 import { getPackage } from '@/lib/packages';
 import { fmtDateShort, fmtRange } from '@/lib/time';
+import { meetingFull } from '@/content/site';
 import { businessTz, localToUtc } from './clock';
 
 const stampUtc = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
@@ -52,6 +53,7 @@ function vevent(b: Booking, host: string, adminUrl?: string): string[] {
     `DTSTART:${stampUtc(start)}`,
     `DTEND:${stampUtc(end)}`,
     `SUMMARY:${esc(lessonTitle(b) + (b.status === 'pending' ? ' (needs approval)' : ''))}`,
+    `LOCATION:${esc(meetingFull())}`,
     `DESCRIPTION:${esc(lessonDescription(b, adminUrl))}`,
     `STATUS:${status}`,
     'TRANSP:OPAQUE',
@@ -90,7 +92,8 @@ export function buildSingle(b: Booking, host: string, opts: { forStudent?: boole
         `DTSTART:${stampUtc(localToUtc(b.date, b.start))}`,
         `DTEND:${stampUtc(localToUtc(b.date, b.end))}`,
         `SUMMARY:${esc(`${opts.cancel ? 'Cancelled: ' : ''}${pkg?.name ?? 'Fishing lesson'} with Boaz Fishing Co.`)}`,
-        `DESCRIPTION:${esc(opts.cancel ? `Confirmation ${b.code}. This lesson was cancelled.` : `Confirmation ${b.code}. Boaz will text you the exact meeting spot. Pay in person.`)}`,
+        `LOCATION:${esc(meetingFull())}`,
+        `DESCRIPTION:${esc(opts.cancel ? `Confirmation ${b.code}. This lesson was cancelled.` : `Confirmation ${b.code}. Meet ${meetingFull()}. Pay in person.`)}`,
         `STATUS:${opts.cancel ? 'CANCELLED' : (opts.sequence ?? 0) >= 1 ? 'CONFIRMED' : 'TENTATIVE'}`,
         'END:VEVENT',
       ]

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import { NAV } from '@/content/site';
+import { MEETING, NAV } from '@/content/site';
 import { AdminLoginForm } from '../AdminLoginForm';
 import { LogoMark } from './Logo';
 
@@ -70,6 +70,10 @@ export function Footer() {
           </a>
           <p className="prose-serif mt-4 max-w-sm text-white/70">
             Summer fishing lessons for every skill level. All gear provided. Patient coaching, honest fish stories.
+          </p>
+          <p className="mt-3 max-w-sm text-sm text-white/70">
+            <span className="font-semibold text-white/90">Meet:</span> {MEETING.spot.toLowerCase()}, {MEETING.area}
+            {MEETING.address ? `, ${MEETING.address}` : ''}.
           </p>
         </div>
         <nav aria-label="Footer" className="md:col-span-4">
